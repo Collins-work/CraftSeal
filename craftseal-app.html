@@ -1,0 +1,3037 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1f5f3a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Craft Seal" />
+  <title>Craft Seal App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --copper: #1f5f3a;
+      --copper-light: #2f7a4d;
+      --copper-pale: #e2f0e8;
+      --ink: #0d0d0d;
+      --paper: #f4eee4;
+      --sand: #f8f2e8;
+      --white: #fff;
+      --slate: #2c3e50;
+      --slate-mid: #4a5568;
+      --slate-light: #718096;
+      --green: #15803d;
+      --green-pale: #dcfce7;
+      --gold: #d97706;
+      --red: #b91c1c;
+      --red-pale: #fee2e2;
+      --border: rgba(0, 0, 0, 0.08);
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --r-sm: 8px;
+      --r-md: 14px;
+      --r-lg: 20px;
+      --r-xl: 28px;
+      --nav-h: 64px;
+      --bottom-h: 70px;
+    }
+
+    html,
+    body,
+    #root {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--sand);
+      color: var(--ink);
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    .logo-mark,
+    .ui-icon,
+    .inline-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.25em;
+      height: 1.25em;
+      flex: 0 0 auto;
+      vertical-align: middle;
+    }
+
+    .logo-mark svg,
+    .ui-icon svg,
+    .inline-icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .logo-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--copper), var(--copper-light));
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    body.theme-dark {
+      --ink: #f8fafc;
+      --paper: #0f1720;
+      --white: #16202b;
+      --slate: #e2e8f0;
+      --slate-mid: #cbd5e1;
+      --slate-light: #94a3b8;
+      --border: rgba(255, 255, 255, 0.1);
+      --shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
+      --copper-pale: rgba(200, 98, 26, 0.18);
+      --green-pale: rgba(21, 128, 61, 0.18);
+      --red-pale: rgba(185, 28, 28, 0.18);
+      color-scheme: dark;
+      background: radial-gradient(circle at top, #1a2430 0%, #0f1720 55%, #090d13 100%);
+    }
+
+    * {
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: inherit;
+    }
+
+    input,
+    textarea,
+    select {
+      font-family: inherit;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--copper);
+      border-radius: 2px;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+      }
+
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .4
+      }
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.35s ease forwards;
+    }
+
+    /* Layout */
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+      background: var(--white);
+      position: relative;
+      box-shadow: 0 0 60px rgba(0, 0, 0, 0.15);
+    }
+
+    @media (min-width: 900px) {
+      .app-shell {
+        max-width: 100%;
+        box-shadow: none;
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        grid-template-rows: auto 1fr;
+      }
+    }
+
+    /* Top Nav */
+    .top-nav {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    @media (min-width: 900px) {
+      .top-nav {
+        grid-column: 1/-1;
+      }
+    }
+
+    .nav-logo-app {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: var(--ink);
+    }
+
+    .logo-circle {
+      width: 34px;
+      height: 34px;
+      background: var(--copper);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .nav-spacer {
+      flex: 1;
+    }
+
+    .nav-icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      background: var(--paper);
+      transition: background 0.2s;
+    }
+
+    .nav-icon-btn:hover {
+      background: var(--copper-pale);
+    }
+
+    .notification-dot {
+      position: relative;
+    }
+
+    .notification-dot::after {
+      display: none;
+    }
+
+    .notif-count {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      background: var(--copper);
+      color: white;
+      font-size: 0.72rem;
+      line-height: 18px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Sidebar (desktop) */
+    .sidebar {
+      background: var(--white);
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      display: none;
+      overflow-y: auto;
+    }
+
+    @media (min-width: 900px) {
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--slate-mid);
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: all 0.2s;
+      border-radius: 0 var(--r-sm) var(--r-sm) 0;
+      margin: 2px 12px 2px 0;
+    }
+
+    .sidebar-item:hover {
+      background: var(--paper);
+      color: var(--copper);
+    }
+
+    .sidebar-item.active {
+      background: var(--copper-pale);
+      color: var(--copper);
+      border-left-color: var(--copper);
+      font-weight: 600;
+    }
+
+    .sidebar-icon {
+      font-size: 1.2rem;
+      width: 24px;
+      text-align: center;
+    }
+
+    .sidebar-section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--slate-light);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 12px 24px 6px;
+      margin-top: 16px;
+    }
+
+    /* Main content */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: var(--bottom-h);
+    }
+
+    @media (min-width: 900px) {
+      .main-content {
+        padding-bottom: 0;
+      }
+    }
+
+    /* Bottom Nav (mobile) */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      height: var(--bottom-h);
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 8px;
+      z-index: 50;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    @media (min-width: 900px) {
+      .bottom-nav {
+        display: none;
+      }
+    }
+
+    .bottom-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 16px;
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: all 0.2s;
+      flex: 1;
+    }
+
+    .bottom-nav-item.active {
+      background: var(--copper-pale);
+    }
+
+    .bottom-nav-item .bn-icon {
+      font-size: 1.3rem;
+    }
+
+    .bottom-nav-item .bn-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--slate-light);
+    }
+
+    .bottom-nav-item.active .bn-label {
+      color: var(--copper);
+    }
+
+    .bottom-nav-item.active .bn-icon {
+      filter: none;
+    }
+
+    /* Page containers */
+    .page {
+      padding: 20px 18px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+
+    .page-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: var(--ink);
+    }
+
+    .page-subtitle {
+      font-size: 0.88rem;
+      color: var(--slate-light);
+      margin-top: 4px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--white);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .card-pad {
+      padding: 18px;
+    }
+
+    .shadow-card {
+      box-shadow: var(--shadow);
+    }
+
+    /* Chips */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 40px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .chip-copper {
+      background: var(--copper-pale);
+      color: var(--copper);
+    }
+
+    .chip-green {
+      background: var(--green-pale);
+      color: var(--green);
+    }
+
+    .chip-gold {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .chip-red {
+      background: var(--red-pale);
+      color: var(--red);
+    }
+
+    .chip-gray {
+      background: var(--paper);
+      color: var(--slate-mid);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: var(--r-sm);
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .btn-copper {
+      background: var(--copper);
+      color: white;
+    }
+
+    .btn-copper:hover {
+      background: var(--copper-light);
+    }
+
+    .btn-outline {
+      border: 2px solid var(--border);
+      color: var(--slate-mid);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--copper);
+      color: var(--copper);
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: white;
+    }
+
+    .btn-full {
+      width: 100%;
+    }
+
+    .btn-sm {
+      padding: 8px 14px;
+      font-size: 0.8rem;
+    }
+
+    .btn-loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .toggle-switch {
+      width: 48px;
+      height: 28px;
+      border-radius: 999px;
+      background: var(--border);
+      padding: 3px;
+      display: flex;
+      align-items: center;
+      transition: background 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch.on {
+      background: var(--copper);
+    }
+
+    .toggle-knob {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--white);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      transform: translateX(0);
+      transition: transform 0.2s ease;
+    }
+
+    .toggle-switch.on .toggle-knob {
+      transform: translateX(20px);
+    }
+
+    /* Input */
+    .input-group {
+      margin-bottom: 16px;
+    }
+
+    .input-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--slate-mid);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: 0.9rem;
+      color: var(--ink);
+      background: var(--white);
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    .input-field:focus {
+      border-color: var(--copper);
+    }
+
+    .input-field::placeholder {
+      color: var(--slate-light);
+    }
+
+    textarea.input-field {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    select.input-field {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23718096' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+    }
+
+    /* Search bar */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--paper);
+      border-radius: var(--r-lg);
+      padding: 12px 16px;
+      border: 1.5px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .search-bar:focus-within {
+      border-color: var(--copper);
+      background: var(--white);
+    }
+
+    .search-bar input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      font-size: 0.9rem;
+      color: var(--ink);
+    }
+
+    .search-bar input::placeholder {
+      color: var(--slate-light);
+    }
+
+    /* Artisan card */
+    .artisan-card {
+      background: var(--white);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border);
+      padding: 16px;
+      transition: all 0.25s;
+      cursor: pointer;
+    }
+
+    .artisan-card:hover {
+      border-color: var(--copper);
+      box-shadow: 0 8px 32px rgba(200, 98, 26, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .ac-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .ac-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .ac-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .ac-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--ink);
+    }
+
+    .ac-trade {
+      font-size: 0.8rem;
+      color: var(--slate-light);
+      margin-top: 2px;
+    }
+
+    .ac-rating {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 6px;
+    }
+
+    .ac-stars {
+      color: var(--gold);
+      font-size: 0.85rem;
+    }
+
+    .ac-rating-num {
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .ac-jobs {
+      font-size: 0.75rem;
+      color: var(--slate-light);
+    }
+
+    .ac-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .ac-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .ac-location {
+      font-size: 0.78rem;
+      color: var(--slate-light);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .ac-price {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: var(--copper);
+    }
+
+    /* Category grid */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .cat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 14px 8px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .cat-item:hover,
+    .cat-item.active {
+      background: var(--copper-pale);
+      border-color: var(--copper);
+    }
+
+    .cat-icon {
+      font-size: 1.6rem;
+    }
+
+    .cat-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--slate-mid);
+      line-height: 1.3;
+    }
+
+    .cat-item.active .cat-label {
+      color: var(--copper);
+    }
+
+    /* Section title row */
+    .sec-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .sec-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--ink);
+    }
+
+    .sec-link {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--copper);
+      cursor: pointer;
+    }
+
+    /* Job card */
+    .job-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .job-card:hover {
+      border-color: var(--copper);
+    }
+
+    .job-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+
+    .job-meta {
+      display: flex;
+      gap: 10px;
+      font-size: 0.78rem;
+      color: var(--slate-light);
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .job-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Review card */
+    .review-card {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .review-card:last-child {
+      border-bottom: none;
+    }
+
+    .review-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .review-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: white;
+    }
+
+    .review-name {
+      font-weight: 600;
+      font-size: 0.88rem;
+    }
+
+    .review-date {
+      font-size: 0.75rem;
+      color: var(--slate-light);
+    }
+
+    .review-text {
+      font-size: 0.85rem;
+      color: var(--slate-mid);
+      line-height: 1.6;
+    }
+
+    /* Modal / Sheet */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .modal-sheet {
+      background: var(--white);
+      border-radius: var(--r-xl) var(--r-xl) 0 0;
+      width: 100%;
+      max-width: 430px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease;
+    }
+
+    .modal-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 14px auto 20px;
+    }
+
+    .modal-body {
+      padding: 0 20px 32px;
+    }
+
+    /* Profile */
+    .profile-hero {
+      background: linear-gradient(135deg, var(--ink) 0%, #1a2633 100%);
+      padding: 32px 20px 0;
+      text-align: center;
+    }
+
+    .profile-avatar-big {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin: 0 auto 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 800;
+      color: white;
+      border: 3px solid var(--copper);
+    }
+
+    .profile-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: white;
+    }
+
+    .profile-trade {
+      font-size: 0.88rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 4px;
+    }
+
+    .profile-tabs {
+      display: flex;
+      background: var(--paper);
+      border-radius: var(--r-lg);
+      padding: 4px;
+    }
+
+    .profile-tab {
+      flex: 1;
+      padding: 9px;
+      border-radius: var(--r-md);
+      text-align: center;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--slate-light);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .profile-tab.active {
+      background: var(--white);
+      color: var(--copper);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Payment */
+    .payment-form {
+      padding: 0 20px 40px;
+    }
+
+    .payment-amount-display {
+      text-align: center;
+      padding: 32px 20px;
+    }
+
+    .payment-amt {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .payment-label {
+      font-size: 0.85rem;
+      color: var(--slate-light);
+      margin-top: 6px;
+    }
+
+    .payment-mode-toggle {
+      display: flex;
+      background: var(--paper);
+      border-radius: var(--r-lg);
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+
+    .pm-pill {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      border-radius: var(--r-md);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--slate-light);
+    }
+
+    .pm-pill.active {
+      background: var(--white);
+      color: var(--copper);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-input {
+      background: var(--paper);
+      border-radius: var(--r-md);
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1.5px solid var(--border);
+      transition: border-color 0.2s;
+    }
+
+    .card-input:focus-within {
+      border-color: var(--copper);
+      background: var(--white);
+    }
+
+    .card-input input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      font-size: 0.95rem;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+
+    .security-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+      font-size: 0.78rem;
+      color: var(--slate-light);
+      margin-top: 14px;
+    }
+
+    /* Onboarding */
+    .onboard-screen {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      text-align: center;
+    }
+
+    .onboard-icon {
+      font-size: 5rem;
+      margin-bottom: 24px;
+    }
+
+    .onboard-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.8rem;
+      color: var(--ink);
+      margin-bottom: 14px;
+    }
+
+    .onboard-text {
+      font-size: 0.95rem;
+      color: var(--slate-mid);
+      line-height: 1.7;
+      max-width: 320px;
+    }
+
+    .onboard-steps {
+      display: flex;
+      gap: 8px;
+      margin-top: 32px;
+    }
+
+    .onboard-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--border);
+      transition: all 0.3s;
+    }
+
+    .onboard-dot.active {
+      background: var(--copper);
+      width: 24px;
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: calc(var(--bottom-h) + 16px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: white;
+      padding: 12px 20px;
+      border-radius: var(--r-md);
+      font-size: 0.88rem;
+      font-weight: 600;
+      z-index: 300;
+      animation: fadeIn 0.3s ease;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      white-space: nowrap;
+    }
+
+    .toast.success {
+      background: var(--green);
+    }
+
+    .toast.error {
+      background: var(--red);
+    }
+
+    /* Progress */
+    .progress-bar {
+      height: 6px;
+      background: var(--paper);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--copper);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    /* Status timeline */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .tl-item {
+      display: flex;
+      gap: 14px;
+    }
+
+    .tl-line {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .tl-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--copper);
+      flex-shrink: 0;
+    }
+
+    .tl-dot.inactive {
+      background: var(--border);
+    }
+
+    .tl-connector {
+      width: 2px;
+      flex: 1;
+      background: var(--border);
+      margin: 3px 0;
+      min-height: 24px;
+    }
+
+    .tl-connector.active {
+      background: var(--copper);
+    }
+
+    .tl-content {
+      padding-bottom: 20px;
+    }
+
+    .tl-label {
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+
+    .tl-time {
+      font-size: 0.75rem;
+      color: var(--slate-light);
+      margin-top: 2px;
+    }
+
+    /* Stat card */
+    .stat-mini {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 14px;
+    }
+
+    .stat-mini-val {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: var(--copper);
+    }
+
+    .stat-mini-lab {
+      font-size: 0.75rem;
+      color: var(--slate-light);
+      margin-top: 3px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 12px 18px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--slate-light);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      color: var(--copper);
+      border-bottom-color: var(--copper);
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0;
+    }
+
+    /* Grid 2col */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+    }
+
+    .empty-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    .empty-text {
+      font-size: 0.88rem;
+      color: var(--slate-light);
+    }
+
+    /* Role selector */
+    .role-card {
+      border: 2px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 24px 20px;
+      cursor: pointer;
+      transition: all 0.25s;
+      text-align: center;
+    }
+
+    .role-card:hover,
+    .role-card.selected {
+      border-color: var(--copper);
+      background: var(--copper-pale);
+    }
+
+    .role-icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+
+    .role-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      margin-bottom: 6px;
+    }
+
+    .role-desc {
+      font-size: 0.82rem;
+      color: var(--slate-light);
+      line-height: 1.6;
+    }
+
+    .setup-screen {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .setup-panel {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .setup-hero {
+      background: linear-gradient(135deg, var(--ink) 0%, #1a2633 100%);
+      color: white;
+      padding: 24px;
+    }
+
+    .setup-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .setup-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.6rem;
+      margin-top: 14px;
+    }
+
+    .setup-text {
+      font-size: 0.92rem;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, 0.72);
+      margin-top: 10px;
+    }
+
+    .setup-body {
+      padding: 24px;
+    }
+
+    .setup-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .setting-copy {
+      flex: 1;
+    }
+
+    .setting-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .setting-desc {
+      font-size: 0.78rem;
+      color: var(--slate-light);
+      margin-top: 3px;
+      line-height: 1.5;
+    }
+
+    /* Quote card */
+    .quote-card {
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 14px;
+      transition: border-color 0.2s;
+      cursor: pointer;
+    }
+
+    .quote-card:hover,
+    .quote-card.selected {
+      border-color: var(--copper);
+      background: var(--copper-pale);
+    }
+
+    .quote-price {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: var(--copper);
+    }
+
+    /* Map placeholder */
+    .map-placeholder {
+      height: 180px;
+      background: linear-gradient(135deg, #e8f4f8, #d4e8ef);
+      border-radius: var(--r-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--slate-mid);
+      font-size: 0.88rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .map-pin {
+      position: absolute;
+      font-size: 2rem;
+      animation: pulse 2s infinite;
+    }
+  </style>
+  </style>
+</head>
+
+<body>
+
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute;left:-9999px;overflow:hidden">
+    <symbol id="cs-logo" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="22" fill="currentColor" opacity="0.14"></circle>
+      <path d="M15 25.5c0-5.2 4.2-9.5 9.5-9.5 2.5 0 4.8 1 6.5 2.6" fill="none" stroke="currentColor" stroke-width="3"
+        stroke-linecap="round"></path>
+      <path d="M33 22.5c-1.5-2.3-4.1-3.8-7-3.8-4.6 0-8.3 3.7-8.3 8.3S21.4 35.3 26 35.3c2.8 0 5.4-1.4 6.9-3.6"
+        fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+      <path d="M18 31.5h12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+    </symbol>
+    <symbol id="icon-rocket" viewBox="0 0 24 24">
+      <path d="M13 3c4.5.5 7.5 3.5 8 8-2 .8-3.8 1.9-5.2 3.4L9 6.6C10.5 5.2 11.7 3.9 13 3Z" fill="none"
+        stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path>
+      <path d="M4 20l4.1-1.1 4.9-4.9-2.9-2.9-4.9 4.9L4 20Z" fill="none" stroke="currentColor" stroke-width="1.7"
+        stroke-linejoin="round"></path>
+      <circle cx="16.4" cy="7.6" r="1.2" fill="currentColor"></circle>
+    </symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+      <path d="M16 16l4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+    </symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24">
+      <path d="M20 7 10 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+        stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-chat" viewBox="0 0 24 24">
+      <path d="M5 5h14v10H8l-3 3V5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+      </path>
+    </symbol>
+    <symbol id="icon-lock" viewBox="0 0 24 24">
+      <rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"></rect>
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      </path>
+    </symbol>
+    <symbol id="icon-star" viewBox="0 0 24 24">
+      <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.8 1-6.1L3.2 9.4l6.1-.9L12 3Z" fill="none"
+        stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24">
+      <path d="M12 3 19 6v5c0 4.5-3 7.9-7 10-4-2.1-7-5.5-7-10V6l7-3Z" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linejoin="round"></path>
+      <path d="m9.2 12 1.9 1.9L15 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+        stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-phone" viewBox="0 0 24 24">
+      <rect x="7" y="3" width="10" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"></rect>
+      <path d="M10 18h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+    </symbol>
+    <symbol id="icon-signal" viewBox="0 0 24 24">
+      <path d="M4 18c3-3 13-3 16 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+      <path d="M7 14c2.2-2.2 7.8-2.2 10 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      </path>
+      <path d="M10 10c1.1-1.1 2.9-1.1 4 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      </path>
+      <circle cx="12" cy="19" r="1" fill="currentColor"></circle>
+    </symbol>
+    <symbol id="icon-store" viewBox="0 0 24 24">
+      <path d="M4 9h16v10H4V9Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+      <path d="M5 5h14l1 4H4l1-4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+      <path d="M9 19v-5h6v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-wallet" viewBox="0 0 24 24">
+      <path d="M3 7h15a2 2 0 0 1 2 2v8H5a2 2 0 0 1-2-2V7Z" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linejoin="round"></path>
+      <path d="M16 11h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+      <circle cx="17.8" cy="11" r="0.9" fill="currentColor"></circle>
+    </symbol>
+    <symbol id="icon-ussd" viewBox="0 0 24 24">
+      <path d="M7 4h10v16H7V4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+      <path d="M9 8h6M9 12h3M9 16h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+    </symbol>
+  </svg>
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback, useRef } = React;
+
+    // ── DATA ──────────────────────────────────────────────
+    const CATEGORIES = [
+      { id: 'all', icon: '🔧', label: 'All' },
+      { id: 'electrical', icon: '⚡', label: 'Electrical' },
+      { id: 'plumbing', icon: '🚿', label: 'Plumbing' },
+      { id: 'carpentry', icon: '🪚', label: 'Carpentry' },
+      { id: 'painting', icon: '🎨', label: 'Painting' },
+      { id: 'tiling', icon: '🏗️', label: 'Tiling' },
+      { id: 'mechanical', icon: '🔩', label: 'Mechanic' },
+      { id: 'ac', icon: '❄️', label: 'AC Repair' },
+      { id: 'masonry', icon: '🧱', label: 'Masonry' },
+      { id: 'welding', icon: '🔥', label: 'Welding' },
+      { id: 'roofing', icon: '🏠', label: 'Roofing' },
+      { id: 'generator', icon: '🔌', label: 'Generator' },
+    ];
+
+    // persistence helpers
+    const STORAGE_KEYS = {
+      artisans: 'craftseal.artisans',
+      notifs: 'craftseal.notifs',
+      profile: 'craftseal.profile',
+      lastEmail: 'craftseal.lastEmail',
+      settings: 'craftseal.settings'
+    };
+
+    function loadJson(key, fallback) {
+      try {
+        const v = localStorage.getItem(key);
+        return v ? JSON.parse(v) : fallback;
+      } catch (e) { return fallback; }
+    }
+
+    const DEFAULT_ARTISANS = [];
+
+    const JOBS = [];
+
+    const DEFAULT_NOTIFS = [];
+
+    const supportsPasskeys = () => Boolean(window.PublicKeyCredential && navigator.credentials);
+
+    const normalizeEmail = (value = '') => String(value).trim().toLowerCase();
+
+    const bufferToBase64Url = (value) => {
+      const bytes = value instanceof ArrayBuffer ? new Uint8Array(value) : new Uint8Array(value.buffer || value);
+      let binary = '';
+      bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    };
+
+    const base64UrlToBuffer = (value) => {
+      const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = normalized + '==='.slice((normalized.length + 3) % 4);
+      const binary = atob(padded);
+      const bytes = new Uint8Array(binary.length);
+      for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+      return bytes;
+    };
+
+    const toWebAuthnCreationOptions = (options) => ({
+      ...options,
+      challenge: base64UrlToBuffer(options.challenge),
+      user: { ...options.user, id: base64UrlToBuffer(options.user.id) },
+      excludeCredentials: (options.excludeCredentials || []).map((credential) => ({ ...credential, id: base64UrlToBuffer(credential.id) })),
+    });
+
+    const toWebAuthnRequestOptions = (options) => ({
+      ...options,
+      challenge: base64UrlToBuffer(options.challenge),
+      allowCredentials: (options.allowCredentials || []).map((credential) => ({ ...credential, id: base64UrlToBuffer(credential.id) })),
+    });
+
+    const credentialToJSON = (credential) => {
+      if (!credential) return null;
+      const response = credential.response || {};
+      return {
+        id: credential.id,
+        rawId: bufferToBase64Url(credential.rawId),
+        type: credential.type,
+        clientExtensionResults: credential.getClientExtensionResults ? credential.getClientExtensionResults() : {},
+        response: {
+          clientDataJSON: bufferToBase64Url(response.clientDataJSON),
+          attestationObject: response.attestationObject ? bufferToBase64Url(response.attestationObject) : undefined,
+          authenticatorData: response.authenticatorData ? bufferToBase64Url(response.authenticatorData) : undefined,
+          signature: response.signature ? bufferToBase64Url(response.signature) : undefined,
+          userHandle: response.userHandle ? bufferToBase64Url(response.userHandle) : undefined,
+        },
+      };
+    };
+
+    const KoraPay = {
+      initiate: async (data) => {
+        const response = await fetch(apiUrl('/api/payments/init'), {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        if (!response.ok) throw new Error('Unable to start KoraPay checkout');
+        return response.json();
+      },
+    };
+
+    // ── HELPERS ────────────────────────────────────────────
+    const stars = (n) => '★'.repeat(n) + '☆'.repeat(5 - n);
+    const fmt = (n) => `₦${n.toLocaleString()}`;
+    const DEFAULT_SETTINGS = {
+      darkMode: false,
+      pushNotifications: true,
+      locationServices: true,
+      biometricLogin: false,
+      soundAlerts: true,
+    };
+    const API_BASE = window.location.protocol === 'file:' ? 'http://127.0.0.1:3001' : '';
+    const apiUrl = (path) => `${API_BASE}${path}`;
+    const createBlankProfile = (role = 'client') => ({
+      role,
+      fullName: '',
+      email: '',
+      phone: '',
+      location: '',
+      businessName: '',
+      trade: '',
+      experience: '',
+      bio: '',
+      skills: '',
+    });
+    const getInitials = (name = 'CS') => name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || 'CS';
+
+    async function apiJson(path, options = {}) {
+      const response = await fetch(apiUrl(path), {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+        ...options,
+      });
+      if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+      return response.json();
+    }
+
+    // ── COMPONENTS ────────────────────────────────────────
+
+    function Icon({ name, className = '', style = {} }) {
+      const map = {
+        '🔍': 'icon-search', '⚡': 'icon-rocket', '✅': 'icon-check', '💬': 'icon-chat', '🔒': 'icon-lock', '⭐': 'icon-star', '📋': 'icon-store', '💳': 'icon-wallet', '📍': 'icon-search', '🔧': 'icon-shield', '📲': 'icon-phone', '📟': 'icon-ussd', '🏪': 'icon-store', '🔔': 'icon-chat', '👤': 'icon-shield'
+      };
+      const id = map[name];
+      if (id) return <span className={`ui-icon ${className}`} style={style}><svg aria-hidden="true"><use href={`#${id}`} /></svg></span>;
+      return <span className={className} style={style}>{name}</span>;
+    }
+
+    function Toast({ message, type = 'default', onDone }) {
+      useEffect(() => { const t = setTimeout(onDone, 3000); return () => clearTimeout(t); }, []);
+      return <div className={`toast ${type}`}>{message}</div>;
+    }
+
+    function Spinner() { return <div className="spinner" />; }
+
+    function ToggleSwitch({ value, onChange }) {
+      return (
+        <button type="button" className={`toggle-switch ${value ? 'on' : ''}`} onClick={() => onChange(!value)} aria-pressed={value}>
+          <span className="toggle-knob" />
+        </button>
+      );
+    }
+
+    function ProfileSetupScreen({ role, initialProfile, onBack, onComplete }) {
+      const [form, setForm] = useState(() => ({
+        ...createBlankProfile(role),
+        ...initialProfile,
+        skills: Array.isArray(initialProfile?.skills) ? initialProfile.skills.join(', ') : (initialProfile?.skills || ''),
+      }));
+      const [password, setPassword] = useState('');
+      const [confirmPassword, setConfirmPassword] = useState('');
+      const [error, setError] = useState('');
+
+      useEffect(() => {
+        setForm({
+          ...createBlankProfile(role),
+          ...initialProfile,
+          skills: Array.isArray(initialProfile?.skills) ? initialProfile.skills.join(', ') : (initialProfile?.skills || ''),
+        });
+        setPassword('');
+        setConfirmPassword('');
+        setError('');
+      }, [role, initialProfile]);
+
+      const setField = (key, value) => setForm(current => ({ ...current, [key]: value }));
+      const initials = getInitials(form.fullName || (role === 'artisan' ? 'Artisan' : 'Client'));
+
+      const handleSubmit = () => {
+        if (!form.fullName.trim() || !form.email.trim() || !form.phone.trim() || !form.location.trim()) {
+          setError('Please complete the required fields.');
+          return;
+        }
+        if (role === 'artisan' && !form.trade.trim()) {
+          setError('Please enter your trade or specialty.');
+          return;
+        }
+        if (!password.trim() || password.trim().length < 6) {
+          setError('Password must be at least 6 characters.');
+          return;
+        }
+        if (password !== confirmPassword) {
+          setError('Passwords do not match.');
+          return;
+        }
+
+        const sanitized = {
+          role,
+          fullName: form.fullName.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          location: form.location.trim(),
+          businessName: form.businessName.trim(),
+          trade: role === 'artisan' ? form.trade.trim() : '',
+          experience: role === 'artisan' ? form.experience.trim() : '',
+          bio: role === 'artisan' ? form.bio.trim() : '',
+          skills: role === 'artisan'
+            ? form.skills.split(',').map(skill => skill.trim()).filter(Boolean)
+            : [],
+          avatar: initials,
+        };
+
+        onComplete(sanitized, password);
+      };
+
+      return (
+        <div className="setup-screen">
+          <div className="setup-panel fade-in">
+            <div className="setup-hero">
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+                <span className="setup-badge">{role === 'artisan' ? <><Icon name={'🔧'} /> Artisan profile</> : <><Icon name={'👤'} /> Client profile</>}</span>
+                <button className="btn btn-outline btn-sm" onClick={onBack} style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'white' }}>← Back</button>
+              </div>
+              <div className="setup-title">Create your profile</div>
+              <div className="setup-text">Fill in your details once so Craft Seal can personalize your session, save your preferences, and keep the account ready on this device.</div>
+            </div>
+            <div className="setup-body">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+                <div className="profile-avatar-big" style={{ width: 64, height: 64, fontSize: '1.5rem', margin: 0, background: role === 'artisan' ? 'var(--copper)' : '#2c3e50' }}>{initials}</div>
+                <div>
+                  <div style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '1rem', color: 'var(--ink)' }}>{role === 'artisan' ? 'Craft your artisan identity' : 'Set up your client account'}</div>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--slate-light)', marginTop: 4 }}>This profile is saved on this device and synced to the secure backend.</div>
+                </div>
+              </div>
+
+              {error && <div style={{ background: 'var(--red-pale)', color: 'var(--red)', borderRadius: 'var(--r-md)', padding: '12px 14px', fontSize: '0.85rem', marginBottom: 16 }}>{error}</div>}
+
+              <div className="setup-grid">
+                <div className="input-group">
+                  <label className="input-label">Full Name</label>
+                  <input className="input-field" value={form.fullName} onChange={e => setField('fullName', e.target.value)} placeholder="Your full name" />
+                </div>
+                <div className="input-group">
+                  <label className="input-label">Email</label>
+                  <input className="input-field" type="email" value={form.email} onChange={e => setField('email', e.target.value)} placeholder="you@example.com" />
+                </div>
+              </div>
+
+              <div className="setup-grid">
+                <div className="input-group">
+                  <label className="input-label">Phone Number</label>
+                  <input className="input-field" value={form.phone} onChange={e => setField('phone', e.target.value)} placeholder="+234 ..." />
+                </div>
+                <div className="input-group">
+                  <label className="input-label">Location</label>
+                  <input className="input-field" value={form.location} onChange={e => setField('location', e.target.value)} placeholder="City, State" />
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label className="input-label">Business / Property Name</label>
+                <input className="input-field" value={form.businessName} onChange={e => setField('businessName', e.target.value)} placeholder={role === 'artisan' ? 'Your workshop or business name' : 'Optional property or company name'} />
+              </div>
+
+              {role === 'artisan' && (
+                <>
+                  <div className="input-group">
+                    <label className="input-label">Trade / Specialty</label>
+                    <input className="input-field" value={form.trade} onChange={e => setField('trade', e.target.value)} placeholder="Electrician, plumber, painter..." />
+                  </div>
+                  <div className="setup-grid">
+                    <div className="input-group">
+                      <label className="input-label">Years of Experience</label>
+                      <input className="input-field" value={form.experience} onChange={e => setField('experience', e.target.value)} placeholder="7 years" />
+                    </div>
+                    <div className="input-group">
+                      <label className="input-label">Skills</label>
+                      <input className="input-field" value={form.skills} onChange={e => setField('skills', e.target.value)} placeholder="Wiring, solar, inverters" />
+                    </div>
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Short Bio</label>
+                    <textarea className="input-field" rows={4} value={form.bio} onChange={e => setField('bio', e.target.value)} placeholder="Tell clients what you do best..." />
+                  </div>
+                </>
+              )}
+
+              <div className="setup-grid">
+                <div className="input-group">
+                  <label className="input-label">Create Password</label>
+                  <input className="input-field" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 6 characters" />
+                </div>
+                <div className="input-group">
+                  <label className="input-label">Confirm Password</label>
+                  <input className="input-field" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repeat password" />
+                </div>
+              </div>
+
+              <button className="btn btn-copper btn-full" onClick={handleSubmit}>Create My Profile</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function AvatarCircle({ initials, color, size = 50 }) {
+      return <div className="ac-avatar" style={{ width: size, height: size, fontSize: size * 0.35, background: color }}>{initials}</div>;
+    }
+
+    function StarRow({ rating }) {
+      return (
+        <div className="ac-rating">
+          <span className="ac-stars">{stars(Math.round(rating))}</span>
+          <span className="ac-rating-num">{rating}</span>
+        </div>
+      );
+    }
+
+    function ArtisanCard({ a, onTap }) {
+      return (
+        <div className="artisan-card" onClick={() => onTap(a)}>
+          <div className="ac-header">
+            <AvatarCircle initials={a.initials} color={a.color} />
+            <div className="ac-info">
+              <div className="ac-name">{a.name}</div>
+              <div className="ac-trade">{a.trade}</div>
+              <StarRow rating={a.rating} />
+            </div>
+            <span className={`chip ${a.badge === 'Top Rated' ? 'chip-copper' : 'chip-green'}`}>{a.badge}</span>
+          </div>
+          <div className="ac-tags">
+            {a.skills.slice(0, 3).map(s => <span key={s} className="chip chip-gray">{s}</span>)}
+          </div>
+          <div className="ac-footer">
+            <span className="ac-location"><Icon name={'📍'} /> {a.location}</span>
+            <span className="ac-price">From {fmt(a.price)}</span>
+          </div>
+        </div>
+      );
+    }
+
+    // ── PAGES ──────────────────────────────────────────────
+
+    function HomePage({ artisans, onArtisan, onJobPost, setPage }) {
+      const [search, setSearch] = useState('');
+      const [cat, setCat] = useState('all');
+
+      const filtered = artisans.filter(a =>
+        (cat === 'all' || a.cat === cat) &&
+        (a.name.toLowerCase().includes(search.toLowerCase()) || a.trade.toLowerCase().includes(search.toLowerCase()))
+      );
+
+      return (
+        <div className="page">
+          {/* Header */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: '0.82rem', color: 'var(--slate-light)', marginBottom: 4 }}>Good morning</div>
+            <div className="page-title">Find Verified Artisans</div>
+          </div>
+
+          {/* Search */}
+          <div className="search-bar" style={{ marginBottom: 20 }}>
+            <Icon name={'🔍'} />
+            <input placeholder="Search plumber, electrician..." value={search} onChange={e => setSearch(e.target.value)} />
+            {search && <span onClick={() => setSearch('')} style={{ cursor: 'pointer', color: 'var(--slate-light)' }}>✕</span>}
+          </div>
+
+          {/* Quick Post Job */}
+          <div style={{ background: 'linear-gradient(135deg, var(--copper), var(--copper-light))', borderRadius: 'var(--r-lg)', padding: '18px 20px', marginBottom: 20, color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} onClick={onJobPost}>
+            <div>
+              <div style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '1rem', marginBottom: 4 }}>Post a Job</div>
+              <div style={{ fontSize: '0.82rem', opacity: 0.85 }}>Get quotes from verified artisans</div>
+            </div>
+            <div style={{ fontSize: '2rem' }}><Icon name={'📋'} /></div>
+          </div>
+
+          {/* Categories */}
+          <div style={{ marginBottom: 20 }}>
+            <div className="sec-row"><div className="sec-title">Categories</div></div>
+            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
+              {CATEGORIES.slice(0, 8).map(c => (
+                <div key={c.id} className={`cat-item ${cat === c.id ? 'active' : ''}`} onClick={() => setCat(c.id)} style={{ minWidth: 70, flexShrink: 0 }}>
+                  <div className="cat-icon"><Icon name={c.icon} /></div>
+                  <div className="cat-label">{c.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Artisans */}
+          <div>
+            <div className="sec-row">
+              <div className="sec-title">{cat === 'all' ? 'Featured Artisans' : CATEGORIES.find(c => c.id === cat)?.label}</div>
+              <div className="sec-link" onClick={() => setPage('explore')}>See all →</div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {filtered.slice(0, 3).map(a => <ArtisanCard key={a.id} a={a} onTap={onArtisan} />)}
+              {filtered.length === 0 && (
+                <div className="empty-state"><div className="empty-icon"><Icon name={'🔍'} /></div><div className="empty-title">No verified artisans yet</div><div className="empty-text">Artisans appear here after they create real profiles in the app.</div></div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function ExplorePage({ artisans, onArtisan }) {
+      const [search, setSearch] = useState('');
+      const [cat, setCat] = useState('all');
+      const [sort, setSort] = useState('rating');
+
+      const filtered = artisans
+        .filter(a => (cat === 'all' || a.cat === cat) && (a.name.toLowerCase().includes(search.toLowerCase()) || a.trade.toLowerCase().includes(search.toLowerCase())))
+        .sort((a, b) => sort === 'rating' ? b.rating - a.rating : sort === 'price' ? a.price - b.price : b.jobs - a.jobs);
+
+      return (
+        <div className="page">
+          <div className="page-header">
+            <div className="page-title">Explore Artisans</div>
+            <div className="page-subtitle">All verified professionals</div>
+          </div>
+          <div className="search-bar" style={{ marginBottom: 14 }}>
+            <Icon name={'🔍'} />
+            <input placeholder="Search any trade..." value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+          {/* Sort */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16, overflowX: 'auto' }}>
+            {[['rating', '⭐', 'Top Rated'], ['price', '💰', 'Lowest Price'], ['jobs', '🔥', 'Most Jobs']].map(([val, icon, lbl]) => (
+              <button key={val} className={`chip ${sort === val ? 'chip-copper' : 'chip-gray'}`} onClick={() => setSort(val)}><Icon name={icon} /> {lbl}</button>
+            ))}
+          </div>
+          {/* Cats */}
+          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 16 }}>
+            {CATEGORIES.map(c => (
+              <div key={c.id} className={`chip ${cat === c.id ? 'chip-copper' : 'chip-gray'}`} style={{ cursor: 'pointer', flexShrink: 0 }} onClick={() => setCat(c.id)}><><Icon name={c.icon} /> {c.label}</></div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {filtered.map(a => <ArtisanCard key={a.id} a={a} onTap={onArtisan} />)}
+            {filtered.length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'😕'} /></div><div className="empty-title">No artisans found</div><div className="empty-text">Create artisan profiles in the app to populate this list.</div></div>}
+          </div>
+        </div>
+      );
+    }
+
+    function JobsPage({ jobs, onPayment }) {
+      const [tab, setTab] = useState('active');
+      const active = jobs.filter(j => j.status !== 'completed');
+      const done = jobs.filter(j => j.status === 'completed');
+      const list = tab === 'active' ? active : done;
+
+      const statusColor = { 'in-progress': 'chip-copper', 'pending': 'chip-gold', 'completed': 'chip-green' };
+      const statusLabel = { 'in-progress': 'In Progress', 'pending': 'Pending', 'completed': 'Completed' };
+
+      return (
+        <div className="page">
+          <div className="page-header">
+            <div className="page-title">My Jobs</div>
+            <div className="page-subtitle">Track your service requests</div>
+          </div>
+          <div className="tabs">
+            <div className={`tab ${tab === 'active' ? 'active' : ''}`} onClick={() => setTab('active')}>Active ({active.length})</div>
+            <div className={`tab ${tab === 'completed' ? 'active' : ''}`} onClick={() => setTab('completed')}>Completed ({done.length})</div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {list.length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'📋'} /></div><div className="empty-title">No jobs yet</div><div className="empty-text">Posted jobs will appear here in real time.</div></div>}
+            {list.map(j => (
+              <div key={j.id} className="job-card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                  <div className="job-title">{j.title}</div>
+                  <span className={`chip ${statusColor[j.status]}`}>{statusLabel[j.status]}</span>
+                </div>
+                <div className="job-meta">
+                  <span><Icon name={'📍'} /> {j.location}</span>
+                  <span><Icon name={'💳'} /> {j.budget}</span>
+                  <span><Icon name={'🕐'} /> {j.date}</span>
+                  {j.bids > 0 && <span style={{ color: 'var(--copper)', fontWeight: 600 }}><Icon name={'💬'} /> {j.bids} quotes</span>}
+                </div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--slate-light)', marginBottom: 12, lineHeight: 1.6 }}>{j.desc}</div>
+                {j.status === 'in-progress' && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: 6, color: 'var(--slate-mid)' }}>
+                      <span>Job progress</span><span>65%</span>
+                    </div>
+                    <div className="progress-bar"><div className="progress-fill" style={{ width: '65%' }} /></div>
+                    <button className="btn btn-copper btn-sm" style={{ marginTop: 12 }} onClick={() => onPayment(j)}><Icon name={'💳'} /> Make Payment</button>
+                  </div>
+                )}
+                {j.status === 'pending' && <button className="btn btn-outline btn-sm">View {j.bids} Quotes →</button>}
+                {j.status === 'completed' && <div className="chip chip-green">✓ Payment Released</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function ProfilePage({ role, profile, artisans, reviews, settings, onToggleSetting, onLogout, onEditProfile, onEnableBiometricLogin, onSignInWithPasskey, biometricSupported }) {
+      const [tab, setTab] = useState('info');
+      const isArtisan = role === 'artisan';
+      const displayName = profile?.fullName || (isArtisan ? 'Artisan Account' : 'My Account');
+      const avatar = profile?.avatar || getInitials(displayName);
+      const artisanSkills = Array.isArray(profile?.skills) && profile.skills.length ? profile.skills : (isArtisan ? (artisans && artisans[0] ? artisans[0].skills : []) : []);
+      const artisanTrade = profile?.trade || (isArtisan ? (artisans && artisans[0] ? artisans[0].trade : 'Trade') : 'Client Account');
+      const artisanBio = profile?.bio || (isArtisan ? (artisans && artisans[0] ? artisans[0].bio : '') : '');
+      const experienceLabel = profile?.experience || (isArtisan ? '7 years' : '');
+      const artisanRecord = isArtisan ? artisans.find((item) => normalizeEmail(item.email) === normalizeEmail(profile?.email)) : null;
+      const profileReviews = isArtisan ? reviews.filter((review) => Number(review.artisan_id) === Number(artisanRecord?.id)) : [];
+      const profileRating = artisanRecord?.rating || profile?.rating || 0;
+
+      const settingsList = [
+        ['pushNotifications', '🔔', 'Push Notifications', 'Receive job updates, messages, and status changes.'],
+        ['locationServices', '📍', 'Location Services', 'Use your location to refine nearby artisan matches.'],
+        ['darkMode', '🌙', 'Dark Mode', 'Switch the app to a darker interface immediately.'],
+        ['biometricLogin', '🔒', 'Biometric Login', 'Unlock with device fingerprint or face recognition.'],
+        ['soundAlerts', '🔊', 'Sound Alerts', 'Play short sounds for important events and confirmations.'],
+      ];
+
+      return (
+        <div>
+          <div className="profile-hero" style={{ paddingBottom: 0 }}>
+            <div className="profile-avatar-big" style={{ background: isArtisan ? 'var(--copper)' : '#2c3e50' }}>{avatar}</div>
+            <div className="profile-name">{displayName}</div>
+            <div className="profile-trade">{isArtisan ? artisanTrade : (profile?.businessName || 'Client Account')}</div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' }}>
+              <span className="chip chip-green">✓ Profile Saved</span>
+              <span className="chip chip-copper">{role === 'artisan' ? <><Icon name={'🔧'} /> Artisan</> : <><Icon name={'👤'} /> Client</>}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 14 }}>
+              <button className="btn btn-outline btn-sm" style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'white' }} onClick={onEditProfile}>Edit Profile</button>
+            </div>
+            <div style={{ padding: '16px 0 0' }}>
+              <div className="profile-tabs">
+                <div className={`profile-tab ${tab === 'info' ? 'active' : ''}`} onClick={() => setTab('info')}>Info</div>
+                {isArtisan && <div className={`profile-tab ${tab === 'portfolio' ? 'active' : ''}`} onClick={() => setTab('portfolio')}>Portfolio</div>}
+                <div className={`profile-tab ${tab === 'reviews' ? 'active' : ''}`} onClick={() => setTab('reviews')}>Reviews</div>
+                <div className={`profile-tab ${tab === 'settings' ? 'active' : ''}`} onClick={() => setTab('settings')}>Settings</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="page">
+            {tab === 'info' && (
+              <div className="fade-in">
+                {isArtisan ? (
+                  <>
+                    <div className="grid-2" style={{ marginBottom: 16 }}>
+                      <div className="stat-mini"><div className="stat-mini-val">{profile?.jobsDone || 0}</div><div className="stat-mini-lab">Jobs Done</div></div>
+                      <div className="stat-mini"><div className="stat-mini-val">{profile?.rating || 4.9}★</div><div className="stat-mini-lab">Avg Rating</div></div>
+                      <div className="stat-mini"><div className="stat-mini-val">{profile?.completion || '98%'}</div><div className="stat-mini-lab">Completion</div></div>
+                      <div className="stat-mini"><div className="stat-mini-val">{experienceLabel || '—'}</div><div className="stat-mini-lab">Experience</div></div>
+                    </div>
+                    <div className="card card-pad" style={{ marginBottom: 16 }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.88rem', marginBottom: 8 }}>About</div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--slate-mid)', lineHeight: 1.7 }}>{artisanBio || 'Add a short bio in profile setup.'}</div>
+                    </div>
+                    <div className="card card-pad" style={{ marginBottom: 16 }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.88rem', marginBottom: 10 }}>Profile Details</div>
+                      {[
+                        ['Email', profile?.email || 'Not set'],
+                        ['Phone', profile?.phone || 'Not set'],
+                        ['Location', profile?.location || 'Not set'],
+                        ['Business', profile?.businessName || 'Not set'],
+                      ].map(([label, value]) => (
+                        <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)', fontSize: '0.88rem' }}>
+                          <span style={{ color: 'var(--slate-light)' }}>{label}</span>
+                          <span style={{ fontWeight: 600 }}>{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="card card-pad">
+                      <div style={{ fontWeight: 700, fontSize: '0.88rem', marginBottom: 10 }}>Skills & Specialties</div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {artisanSkills.length ? artisanSkills.map(s => <span key={s} className="chip chip-copper">{s}</span>) : <span style={{ fontSize: '0.85rem', color: 'var(--slate-light)' }}>No skills saved yet.</span>}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="card card-pad">
+                    <div style={{ fontWeight: 700, marginBottom: 16 }}>Account Details</div>
+                    {[
+                      ['Name', profile?.fullName || 'Not set'],
+                      ['Email', profile?.email || 'Not set'],
+                      ['Phone', profile?.phone || 'Not set'],
+                      ['Location', profile?.location || 'Not set'],
+                      ['Business / Property', profile?.businessName || 'Not set'],
+                      ['Session', 'Saved on this device'],
+                    ].map(([label, value]) => (
+                      <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)', fontSize: '0.88rem' }}>
+                        <span style={{ color: 'var(--slate-light)' }}>{label}</span>
+                        <span style={{ fontWeight: 600 }}>{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {tab === 'portfolio' && isArtisan && (
+              <div className="fade-in">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  {(artisanSkills.length ? artisanSkills : ['Sample Work']).slice(0, 6).map((item, i) => (
+                    <div key={i} style={{ background: `linear-gradient(135deg, ${['#1f5f3a22', '#2563eb22', '#15803d22', '#7c3aed22', '#be185d22', '#0891b222'][i % 6]}, #eee)`, borderRadius: 'var(--r-md)', height: 110, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, border: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: '1.5rem' }}><Icon name={'⚡'} /></div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 600, textAlign: 'center', padding: '0 8px' }}>{item}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {tab === 'reviews' && (
+              <div className="fade-in">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px', background: 'var(--copper-pale)', borderRadius: 'var(--r-md)', marginBottom: 16 }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '2.5rem', color: 'var(--copper)' }}>{profileRating || 4.9}</div>
+                    <div style={{ color: 'var(--gold)', fontSize: '1rem' }}>★★★★★</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-light)', marginTop: 2 }}>{profile?.reviewCount || profileReviews.length} reviews</div>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    {[5, 4, 3, 2, 1].map(s => (
+                      <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--slate-light)', width: 8 }}>{s}</span>
+                        <div style={{ flex: 1, height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
+                          <div style={{ width: `${s === 5 ? 85 : s === 4 ? 10 : s === 3 ? 3 : 1}%`, height: '100%', background: 'var(--gold)', borderRadius: 3 }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {profileReviews.map(r => (
+                  <div key={r.id} className="review-card">
+                    <div className="review-header">
+                      <div className="review-avatar" style={{ background: '#c8621a' }}>{getInitials(r.text || 'Review')}</div>
+                      <div>
+                        <div className="review-name">Craft Seal user</div>
+                        <div style={{ color: 'var(--gold)', fontSize: '0.75rem' }}>{'★'.repeat(r.rating)}</div>
+                      </div>
+                      <div className="review-date" style={{ marginLeft: 'auto' }}>{r.created_at || 'Just now'}</div>
+                    </div>
+                    <div className="review-text">{r.text}</div>
+                  </div>
+                ))}
+                {profileReviews.length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'⭐'} /></div><div className="empty-title">No reviews yet</div><div className="empty-text">Reviews will appear here once real jobs are completed.</div></div>}
+              </div>
+            )}
+
+            {tab === 'settings' && (
+              <div className="fade-in">
+                <div className="card" style={{ marginBottom: 16 }}>
+                  {settingsList.map(([key, icon, label, desc]) => (
+                    <div key={key} className="setting-row">
+                      <span style={{ marginRight: 4 }}><Icon name={icon} /></span>
+                      <div className="setting-copy">
+                        <div className="setting-title">{label}</div>
+                        <div className="setting-desc">{desc}</div>
+                      </div>
+                      <ToggleSwitch value={Boolean(settings?.[key])} onChange={(nextValue) => onToggleSetting(key, nextValue)} />
+                    </div>
+                  ))}
+                </div>
+                <div className="card card-pad" style={{ marginBottom: 16 }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.88rem', marginBottom: 8 }}>Biometric Login</div>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--slate-mid)', lineHeight: 1.6, marginBottom: 12 }}>
+                    {biometricSupported ? 'This device supports passkeys / biometric unlock. You can enroll this account and sign in without a password.' : 'This device does not support passkeys or biometric unlock.'}
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    <button className="btn btn-copper btn-sm" onClick={onEnableBiometricLogin} disabled={!biometricSupported}>
+                      <Icon name={'🔒'} /> Enable on this device
+                    </button>
+                    <button className="btn btn-outline btn-sm" onClick={onSignInWithPasskey} disabled={!biometricSupported}>
+                      <Icon name={'🔐'} /> Sign in with passkey
+                    </button>
+                  </div>
+                </div>
+                <button className="btn btn-outline btn-full" style={{ marginBottom: 10, color: 'var(--red)', borderColor: 'var(--red-pale)' }} onClick={onLogout}>
+                  <Icon name={'🚪'} /> Log Out
+                </button>
+                <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--slate-light)', marginTop: 16 }}>
+                  Craft Seal Platform · Powered by KoraPay
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function NotificationsPage({ notifs, onMarkRead }) {
+      return (
+        <div className="page">
+          <div className="page-header">
+            <div className="page-title">Notifications</div>
+            <div className="page-subtitle">{notifs.filter(n => n.unread).length} unread</div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {notifs.length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'🔔'} /></div><div className="empty-title">No notifications yet</div><div className="empty-text">Job updates and payment alerts will appear here.</div></div>}
+            {notifs.map(n => (
+              <div key={n.id} onClick={() => onMarkRead && onMarkRead(n.id)} style={{ cursor: onMarkRead ? 'pointer' : 'default', background: n.unread ? 'var(--copper-pale)' : 'var(--white)', border: `1px solid ${n.unread ? 'rgba(200,98,26,0.2)' : 'var(--border)'}`, borderRadius: 'var(--r-md)', padding: '14px 16px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <span style={{ fontSize: '1.3rem' }}><Icon name={n.icon} /></span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.88rem', lineHeight: 1.5, marginBottom: 4 }}>{n.text}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--slate-light)' }}>{n.time}</div>
+                </div>
+                {n.unread && <div style={{ width: 8, height: 8, background: 'var(--copper)', borderRadius: '50%', marginTop: 4, flexShrink: 0 }} />}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // ── MODALS ────────────────────────────────────────────
+
+    function ArtisanDetailModal({ artisan: a, reviews, onClose, onHire }) {
+      const [tab, setTab] = useState('about');
+      return (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="modal-sheet">
+            <div className="modal-handle" />
+            <div style={{ padding: '0 20px 12px', display: 'flex', gap: 14, alignItems: 'center' }}>
+              <AvatarCircle initials={a.initials} color={a.color} size={60} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '1.1rem' }}>{a.name}</div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--slate-light)' }}>{a.trade}</div>
+                <StarRow rating={a.rating} />
+              </div>
+              <span className={`chip ${a.available ? 'chip-green' : 'chip-red'}`}>{a.available ? '● Available' : '● Busy'}</span>
+            </div>
+            <div style={{ padding: '0 20px 12px' }}>
+              <div className="profile-tabs">
+                {['about', 'portfolio', 'reviews'].map(t => (
+                  <div key={t} className={`profile-tab ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)} style={{ textTransform: 'capitalize' }}>{t}</div>
+                ))}
+              </div>
+            </div>
+            <div className="modal-body">
+              {tab === 'about' && (
+                <div className="fade-in">
+                  <div style={{ fontSize: '0.9rem', color: 'var(--slate-mid)', lineHeight: 1.7, marginBottom: 16 }}>{a.bio}</div>
+                  <div className="grid-2" style={{ marginBottom: 16 }}>
+                    <div className="stat-mini"><div className="stat-mini-val">{a.jobs}</div><div className="stat-mini-lab">Jobs Completed</div></div>
+                    <div className="stat-mini"><div className="stat-mini-val">{a.rating}★</div><div className="stat-mini-lab">Average Rating</div></div>
+                  </div>
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 8 }}>Specialties</div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {a.skills.map(s => <span key={s} className="chip chip-copper">{s}</span>)}
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 8 }}>Location</div>
+                    <div className="map-placeholder">
+                      <div className="map-pin"><Icon name={'📍'} /></div>
+                      <span style={{ color: 'var(--slate-mid)', fontSize: '0.85rem' }}>{a.location}</span>
+                    </div>
+                  </div>
+                  <div className="timeline" style={{ marginBottom: 20 }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 12 }}>Verification Status</div>
+                    {[['Document Check', 'Completed 3 months ago', true], ['Interview Session', 'Passed — Excellent', true], ['Field Inspection', '2 sites verified', true], ['Background Check', 'Cleared', true]].map(([l, t, done], i, arr) => (
+                      <div key={i} className="tl-item">
+                        <div className="tl-line">
+                          <div className={`tl-dot ${done ? '' : 'inactive'}`} />
+                          {i < arr.length - 1 && <div className={`tl-connector ${done ? 'active' : ''}`} />}
+                        </div>
+                        <div className="tl-content">
+                          <div className="tl-label">{l}</div>
+                          <div className="tl-time">{t}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button className="btn btn-copper btn-full" onClick={() => onHire(a)}>
+                    Hire {a.name.split(' ')[0]} — From {fmt(a.price)}
+                  </button>
+                </div>
+              )}
+              {tab === 'portfolio' && (
+                <div className="fade-in">
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    {a.skills.map((s, i) => (
+                      <div key={i} style={{ background: `linear-gradient(135deg, ${a.color}22, #eee)`, borderRadius: 'var(--r-md)', height: 110, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                        <div style={{ fontSize: '1.5rem' }}><Icon name={'🔧'} /></div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 600, textAlign: 'center' }}>{s}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {tab === 'reviews' && (
+                <div className="fade-in">
+                  {reviews.filter((review) => Number(review.artisan_id) === Number(a.id)).map(r => (
+                    <div key={r.id} className="review-card">
+                      <div className="review-header">
+                        <div className="review-avatar" style={{ background: '#c8621a' }}>{getInitials(String(r.user_id || 'Review'))}</div>
+                        <div>
+                          <div className="review-name">Client</div>
+                          <div style={{ color: 'var(--gold)', fontSize: '0.75rem' }}>{'★'.repeat(r.rating)}</div>
+                        </div>
+                        <div style={{ marginLeft: 'auto', fontSize: '0.75rem', color: 'var(--slate-light)' }}>{r.created_at || 'Just now'}</div>
+                      </div>
+                      <div className="review-text">{r.text}</div>
+                    </div>
+                  ))}
+                  {reviews.filter((review) => Number(review.artisan_id) === Number(a.id)).length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'⭐'} /></div><div className="empty-title">No reviews yet</div><div className="empty-text">This artisan will show real customer reviews after completed jobs.</div></div>}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function PostJobModal({ onClose, onSubmit }) {
+      const [step, setStep] = useState(1);
+      const [data, setData] = useState({ title: '', cat: '', desc: '', location: '', budget: '' });
+      const set = (k, v) => setData(d => ({ ...d, [k]: v }));
+
+      const step1Done = data.title && data.cat;
+      const step2Done = data.desc && data.location;
+
+      return (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="modal-sheet">
+            <div className="modal-handle" />
+            <div style={{ padding: '0 20px 16px' }}>
+              <div style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '1.15rem', marginBottom: 4 }}>Post a Job</div>
+              <div className="progress-bar" style={{ marginTop: 8 }}>
+                <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }} />
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--slate-light)', marginTop: 6 }}>Step {step} of 3</div>
+            </div>
+            <div className="modal-body">
+              {step === 1 && (
+                <div className="fade-in">
+                  <div className="input-group">
+                    <label className="input-label">Job Title</label>
+                    <input className="input-field" placeholder="e.g. Fix bathroom leaking pipe" value={data.title} onChange={e => set('title', e.target.value)} />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Service Category</label>
+                    <select className="input-field" value={data.cat} onChange={e => set('cat', e.target.value)}>
+                      <option value="">Select category...</option>
+                      {CATEGORIES.slice(1).map(c => <option key={c.id} value={c.id}><><Icon name={c.icon} /> {c.label}</></option>)}
+                    </select>
+                  </div>
+                  <button className="btn btn-copper btn-full" disabled={!step1Done} onClick={() => setStep(2)} style={{ opacity: step1Done ? 1 : 0.5 }}>
+                    Next →
+                  </button>
+                </div>
+              )}
+              {step === 2 && (
+                <div className="fade-in">
+                  <div className="input-group">
+                    <label className="input-label">Job Description</label>
+                    <textarea className="input-field" placeholder="Describe the problem in detail..." value={data.desc} onChange={e => set('desc', e.target.value)} rows={4} />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Location</label>
+                    <input className="input-field" placeholder="e.g. Victoria Island, Lagos" value={data.location} onChange={e => set('location', e.target.value)} />
+                  </div>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button className="btn btn-outline" onClick={() => setStep(1)}>← Back</button>
+                    <button className="btn btn-copper" style={{ flex: 1, opacity: step2Done ? 1 : 0.5 }} disabled={!step2Done} onClick={() => setStep(3)}>Next →</button>
+                  </div>
+                </div>
+              )}
+              {step === 3 && (
+                <div className="fade-in">
+                  <div className="input-group">
+                    <label className="input-label">Budget Range (optional)</label>
+                    <input className="input-field" placeholder="e.g. ₦10,000–20,000" value={data.budget} onChange={e => set('budget', e.target.value)} />
+                  </div>
+                  <div className="card card-pad" style={{ marginBottom: 16, background: 'var(--paper)' }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 10 }}>Job Summary</div>
+                    {[['Title', data.title], ['Category', data.cat], ['Location', data.location], ['Budget', data.budget || 'Not specified']].map(([l, v]) => (
+                      <div key={l} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
+                        <span style={{ color: 'var(--slate-light)' }}>{l}</span>
+                        <span style={{ fontWeight: 600 }}>{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button className="btn btn-outline" onClick={() => setStep(2)}>← Back</button>
+                    <button className="btn btn-copper" style={{ flex: 1 }} onClick={() => onSubmit(data)}><Icon name={'📋'} /> Post Job</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function PaymentModal({ job, artisan, onClose, showToast, onPaid }) {
+      const [loading, setLoading] = useState(false);
+      const [done, setDone] = useState(false);
+      const amount = artisan ? artisan.price : 18500;
+
+      const handlePay = async () => {
+        setLoading(true);
+        try {
+          const result = await KoraPay.initiate({ amount, jobId: job?.id || null, job: job || null });
+          if (result.checkout_url && typeof window !== 'undefined') {
+            window.open(result.checkout_url, '_blank', 'noopener,noreferrer');
+          }
+          setDone(true);
+          showToast('Payment successful! Funds held securely.', 'success');
+          if (onPaid) onPaid({ icon: '🔒', text: `Payment of ${fmt(amount)} started for ${artisan?.name || job?.title}` });
+        } catch (e) {
+          showToast(e.message || 'Payment failed', 'error');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="modal-sheet">
+            <div className="modal-handle" />
+            {!done ? (
+              <>
+                <div style={{ padding: '0 20px 8px', fontFamily: 'Syne', fontWeight: 800, fontSize: '1.15rem' }}>Secure Payment</div>
+                <div className="payment-amount-display">
+                  <div className="payment-amt">{fmt(amount)}</div>
+                  <div className="payment-label">for {artisan?.name || (job?.title)} · Escrow Protected</div>
+                </div>
+                <div className="payment-form">
+                  <div style={{ background: 'var(--green-pale)', border: '1px solid rgba(21,128,61,0.2)', borderRadius: 'var(--r-md)', padding: 12, marginBottom: 16, fontSize: '0.82rem', color: 'var(--green)', lineHeight: 1.6 }}>
+                    <Icon name={'🔒'} /> You will be redirected to KoraPay checkout. No card data is stored in Craft Seal.
+                  </div>
+                  <button className={`btn btn-copper btn-full ${loading ? 'btn-loading' : ''}`} onClick={handlePay}>
+                    {loading ? <Spinner /> : <><Icon name={'🔒'} /> Continue to KoraPay Checkout</>}
+                  </button>
+                  <div className="security-badge">
+                    <span><Icon name={'🔒'} /></span> Tokenized checkout via KoraPay · No raw card storage
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div style={{ padding: '40px 24px', textAlign: 'center' }}>
+                <div style={{ fontSize: '4rem', marginBottom: 20 }}><Icon name={'✅'} /></div>
+                <div style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '1.3rem', marginBottom: 10 }}>Payment Successful!</div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--slate-mid)', lineHeight: 1.7, marginBottom: 24 }}>
+                  {fmt(amount)} is now held securely in escrow. It will be released to the artisan once you confirm the job is complete.
+                </div>
+                <div style={{ background: 'var(--green-pale)', border: '1px solid rgba(21,128,61,0.2)', borderRadius: 'var(--r-md)', padding: 14, marginBottom: 24, fontSize: '0.82rem', color: 'var(--green)', fontWeight: 600 }}>
+                  Reference: CSM-{Date.now().toString().slice(-8)}
+                </div>
+                <button className="btn btn-copper btn-full" onClick={onClose}>Done</button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function OnboardingScreen({ onDone }) {
+      const [step, setStep] = useState(0);
+      const steps = [
+        { icon: '🛡️', title: 'Verified Artisans Only', text: 'Every craftsman on Craft Seal goes through document checks, interviews, and physical field inspections before joining.' },
+        { icon: '⚡', title: 'Get Matched Instantly', text: 'Post a job, receive multiple quotes, compare artisans, and choose the best fit for your budget and needs.' },
+        { icon: '🔒', title: 'Pay with Confidence', text: 'Your payment is held securely in escrow via KoraPay and only released when the job is completed to your satisfaction.' },
+      ];
+      const [role, setRole] = useState('');
+
+      if (step === 3) {
+        return (
+          <div className="onboard-screen">
+            <div className="onboard-icon"><Icon name={'👤'} /></div>
+            <div className="onboard-title">I am a...</div>
+            <div style={{ width: '100%', maxWidth: 320, display: 'flex', flexDirection: 'column', gap: 14, marginTop: 8 }}>
+              {[['client', '🏠', 'Looking for Artisans', 'Find verified craftsmen for any home or business job.'], ['artisan', '🔧', 'I am an Artisan', 'Join the platform to grow my client base and income.']].map(([val, icon, title, desc]) => (
+                <div key={val} className={`role-card ${role === val ? 'selected' : ''}`} onClick={() => setRole(val)}>
+                  <div className="role-icon"><Icon name={icon} /></div>
+                  <div className="role-title">{title}</div>
+                  <div className="role-desc">{desc}</div>
+                </div>
+              ))}
+            </div>
+            <button className="btn btn-copper btn-full" style={{ marginTop: 24, maxWidth: 320, opacity: role ? 1 : 0.5 }} disabled={!role} onClick={() => onDone(role)}>
+              Get Started →
+            </button>
+          </div>
+        );
+      }
+
+      const s = steps[step];
+      return (
+        <div className="onboard-screen">
+          <div style={{ position: 'absolute', top: 20, right: 20, cursor: 'pointer', fontSize: '0.85rem', color: 'var(--slate-light)' }} onClick={() => setStep(3)}>Skip</div>
+          <div className="onboard-icon"><Icon name={s.icon} /></div>
+          <div className="onboard-title">{s.title}</div>
+          <p className="onboard-text">{s.text}</p>
+          <div className="onboard-steps">
+            {steps.map((_, i) => <div key={i} className={`onboard-dot ${i === step ? 'active' : ''}`} />)}
+          </div>
+          <button className="btn btn-copper" style={{ marginTop: 32, width: 200 }} onClick={() => setStep(s => s + 1)}>
+            {step < 2 ? 'Next →' : "Let's Go!"}
+          </button>
+        </div>
+      );
+    }
+
+    function LoginScreen({ onCreateAccount, onSignedIn, showToast }) {
+      const [email, setEmail] = useState(loadJson(STORAGE_KEYS.lastEmail, ''));
+      const [password, setPassword] = useState('');
+      const [loading, setLoading] = useState(false);
+
+      const handlePasswordLogin = async () => {
+        setLoading(true);
+        try {
+          const response = await apiJson('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+          if (response && response.user) {
+            localStorage.setItem(STORAGE_KEYS.lastEmail, response.user.email || email);
+            onSignedIn(response.user);
+            showToast('Signed in successfully.', 'success');
+          }
+        } catch (e) {
+          showToast('Sign in failed. Check email/password.', 'error');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const handlePasskeyLogin = async () => {
+        if (!supportsPasskeys()) return showToast('Passkeys not supported on this device.', 'error');
+        if (!email) return showToast('Enter your email first for passkey lookup.', 'error');
+        setLoading(true);
+        try {
+          const opts = await apiJson('/api/auth/webauthn/login/options', { method: 'POST', body: JSON.stringify({ email }) });
+          const assertion = await navigator.credentials.get({ publicKey: toWebAuthnRequestOptions(opts.options) });
+          const verification = await apiJson('/api/auth/webauthn/login/verify', { method: 'POST', body: JSON.stringify({ userId: opts.user.id, credentialID: assertion.id, response: credentialToJSON(assertion) }) });
+          if (verification && verification.user) {
+            localStorage.setItem(STORAGE_KEYS.lastEmail, verification.user.email || email);
+            onSignedIn(verification.user);
+            showToast('Passkey sign-in successful.', 'success');
+          } else {
+            showToast('Passkey sign-in failed.', 'error');
+          }
+        } catch (e) {
+          showToast(e.message || 'Passkey sign-in error', 'error');
+        } finally { setLoading(false); }
+      };
+
+      return (
+        <div className="onboard-screen">
+          <div style={{ width: '100%', maxWidth: 420 }}>
+            <div style={{ textAlign: 'center', marginBottom: 20 }}>
+              <div style={{ fontSize: '2.4rem' }}><Icon name={'🔒'} /></div>
+              <div style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '1.4rem', marginTop: 8 }}>Welcome back</div>
+              <div style={{ color: 'var(--slate-light)', marginTop: 6 }}>Sign in to continue to Craft Seal</div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div className="input-group"><label className="input-label">Email</label><input className="input-field" value={email} onChange={e => setEmail(e.target.value)} /></div>
+              <div className="input-group"><label className="input-label">Password</label><input className="input-field" type="password" value={password} onChange={e => setPassword(e.target.value)} /></div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button className={`btn btn-copper btn-full ${loading ? 'btn-loading' : ''}`} onClick={handlePasswordLogin} disabled={loading}>{loading ? <Spinner /> : 'Sign in'}</button>
+              </div>
+              <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
+                <button className="btn btn-outline btn-full" onClick={onCreateAccount}>Create account</button>
+                <button className="btn btn-outline btn-full" onClick={handlePasskeyLogin} disabled={!supportsPasskeys()}><Icon name={'🔐'} /> Passkey</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── APP ROOT ──────────────────────────────────────────
+    function App() {
+      const [storedProfile, setStoredProfile] = useState(() => loadJson(STORAGE_KEYS.profile, null));
+      const [authChecked, setAuthChecked] = useState(false);
+      const [settings, setSettings] = useState(() => ({ ...DEFAULT_SETTINGS, ...loadJson(STORAGE_KEYS.settings, {}) }));
+      const [onboarded, setOnboarded] = useState(() => Boolean(loadJson(STORAGE_KEYS.profile, null)));
+      const [role, setRole] = useState(() => loadJson(STORAGE_KEYS.profile, null)?.role || 'client');
+      const [profileSetup, setProfileSetup] = useState(null);
+      const [page, setPage] = useState('home');
+      const [modal, setModal] = useState(null); // {type, data}
+      const [toast, setToast] = useState(null);
+
+      const showToast = (msg, type = 'default') => {
+        setToast({ msg, type });
+        setTimeout(() => setToast(null), 3500);
+      };
+
+      useEffect(() => {
+        localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(settings));
+        document.body.classList.toggle('theme-dark', Boolean(settings.darkMode));
+        const themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeMeta) themeMeta.setAttribute('content', settings.darkMode ? '#0f1720' : '#1f5f3a');
+      }, [settings]);
+
+      useEffect(() => {
+        if (storedProfile) {
+          localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(storedProfile));
+        } else {
+          localStorage.removeItem(STORAGE_KEYS.profile);
+        }
+      }, [storedProfile]);
+
+      const [artisans, setArtisans] = useState([]);
+      const [jobs, setJobs] = useState([]);
+      const [notifs, setNotifs] = useState([]);
+      const [reviews, setReviews] = useState([]);
+
+      useEffect(() => {
+        let alive = true;
+        (async () => {
+          try {
+            const state = await apiJson('/api/state');
+            if (!alive) return;
+            setArtisans(Array.isArray(state.artisans) ? state.artisans : []);
+            setJobs(Array.isArray(state.jobs) ? state.jobs : []);
+            setNotifs(Array.isArray(state.notifications) ? state.notifications : []);
+            setReviews(Array.isArray(state.reviews) ? state.reviews : []);
+          } catch (e) {
+            if (!alive) return;
+            setArtisans([]);
+            setJobs([]);
+            setNotifs([]);
+            setReviews([]);
+          }
+        })();
+        return () => { alive = false; };
+      }, []);
+
+      // initial auth check - see if server session exists
+      useEffect(() => {
+        let alive = true;
+        (async () => {
+          try {
+            const resp = await apiJson('/api/me');
+            if (!alive) return;
+            if (resp && resp.user) {
+              setStoredProfile(resp.user);
+              setOnboarded(true);
+              setRole(resp.user.role || 'client');
+            }
+          } catch (e) {
+            // not signed in
+          } finally {
+            if (alive) setAuthChecked(true);
+          }
+        })();
+        return () => { alive = false; };
+      }, []);
+
+      useEffect(() => {
+        if (!API_BASE) return undefined;
+        const source = new EventSource(apiUrl('/api/events'));
+        source.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            if (message.type === 'state' && message.state) {
+              setArtisans(Array.isArray(message.state.artisans) ? message.state.artisans : []);
+              setJobs(Array.isArray(message.state.jobs) ? message.state.jobs : []);
+              setNotifs(Array.isArray(message.state.notifications) ? message.state.notifications : []);
+              setReviews(Array.isArray(message.state.reviews) ? message.state.reviews : []);
+            }
+          } catch (error) { }
+        };
+        source.onerror = () => { };
+        return () => source.close();
+      }, []);
+
+      const handleOnboard = (r) => {
+        setRole(r);
+        setOnboarded(true);
+        setProfileSetup({ role: r, profile: createBlankProfile(r) });
+      };
+
+      const handleProfileComplete = async (profile, password) => {
+        let nextProfile = profile;
+        try {
+          const response = await apiJson('/api/auth/register', {
+            method: 'POST',
+            body: JSON.stringify({ ...profile, password }),
+          });
+          if (response && response.user) nextProfile = { ...profile, ...response.user };
+        } catch (error) {
+          if ((error && String(error.message || '')).includes('409')) {
+            try {
+              const response = await apiJson('/api/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ email: profile.email, password }),
+              });
+              if (response && response.user) nextProfile = { ...profile, ...response.user };
+            } catch (loginError) {
+              showToast('Could not sync profile right now.', 'error');
+            }
+          } else {
+            showToast('Could not sync profile right now.', 'error');
+          }
+        }
+        setStoredProfile(nextProfile);
+        setRole(nextProfile.role);
+        setOnboarded(true);
+        setProfileSetup(null);
+        setPage('profile');
+        showToast('Profile created successfully.', 'success');
+      };
+
+      const handleEditProfile = () => {
+        setProfileSetup({ role, profile: storedProfile || createBlankProfile(role) });
+      };
+
+      const handleToggleSetting = (key, value) => {
+        setSettings(current => ({ ...current, [key]: value }));
+        if (key === 'darkMode') {
+          showToast(value ? 'Dark mode enabled.' : 'Dark mode disabled.', 'success');
+        }
+        if (key === 'biometricLogin' && value) {
+          enablePasskeySetup().catch(() => setSettings((current) => ({ ...current, biometricLogin: false })));
+        }
+      };
+
+      const handleLogout = () => {
+        apiJson('/api/auth/logout', { method: 'POST' }).catch(() => { });
+        if (storedProfile?.email) localStorage.setItem(STORAGE_KEYS.lastEmail, storedProfile.email);
+        setModal(null);
+        setPage('home');
+        setRole('client');
+        setOnboarded(false);
+        setProfileSetup(null);
+        setStoredProfile(null);
+        localStorage.removeItem(STORAGE_KEYS.profile);
+        showToast('Session cleared. Create a new profile to continue.', 'default');
+      };
+
+      const openArtisan = (a) => setModal({ type: 'artisan', data: a });
+      const openJobPost = () => setModal({ type: 'jobPost' });
+      const openPayment = (data) => setModal({ type: 'payment', data });
+
+      const enablePasskeySetup = async () => {
+        if (!supportsPasskeys()) {
+          showToast('This device does not support biometric login.', 'error');
+          return;
+        }
+        if (!storedProfile?.email) {
+          showToast('Create a profile first before enabling biometric login.', 'error');
+          return;
+        }
+        const optionsResponse = await apiJson('/api/auth/webauthn/register/options', {
+          method: 'POST',
+          body: JSON.stringify({ email: storedProfile.email }),
+        });
+        const credential = await navigator.credentials.create({ publicKey: toWebAuthnCreationOptions(optionsResponse.options) });
+        const verification = await apiJson('/api/auth/webauthn/register/verify', {
+          method: 'POST',
+          body: JSON.stringify({ response: credentialToJSON(credential), transports: credential.response?.getTransports ? credential.response.getTransports() : ['internal'] }),
+        });
+        if (verification?.verified) {
+          setSettings((current) => ({ ...current, biometricLogin: true }));
+          showToast('Biometric login enabled.', 'success');
+        }
+      };
+
+      const signInWithPasskey = async () => {
+        if (!supportsPasskeys()) {
+          showToast('This device does not support biometric login.', 'error');
+          return;
+        }
+        const email = storedProfile?.email || loadJson(STORAGE_KEYS.lastEmail, '');
+        if (!email) {
+          showToast('No saved account found for passkey login.', 'error');
+          return;
+        }
+        const optionsResponse = await apiJson('/api/auth/webauthn/login/options', {
+          method: 'POST',
+          body: JSON.stringify({ email }),
+        });
+        const assertion = await navigator.credentials.get({ publicKey: toWebAuthnRequestOptions(optionsResponse.options) });
+        const verification = await apiJson('/api/auth/webauthn/login/verify', {
+          method: 'POST',
+          body: JSON.stringify({
+            userId: optionsResponse.user.id,
+            credentialID: assertion.id,
+            response: credentialToJSON(assertion),
+          }),
+        });
+        if (verification?.user) {
+          setStoredProfile({ ...storedProfile, ...verification.user });
+          localStorage.setItem(STORAGE_KEYS.lastEmail, verification.user.email || email);
+          setOnboarded(true);
+          setRole(verification.user.role || storedProfile.role);
+          setPage('home');
+          showToast('Biometric login successful.', 'success');
+        }
+      };
+
+      const handleHire = (artisan) => {
+        setModal({ type: 'payment', data: { artisan } });
+      };
+
+      const handleJobPost = async (jobData) => {
+        setModal(null);
+        try {
+          const response = await apiJson('/api/jobs', {
+            method: 'POST',
+            body: JSON.stringify({ job: jobData }),
+          });
+          if (response && Array.isArray(response.state?.jobs)) setJobs(response.state.jobs);
+          if (response && Array.isArray(response.state?.notifications)) setNotifs(response.state.notifications);
+        } catch (error) {
+          showToast('Could not post job right now.', 'error');
+          return;
+        }
+        if (settings.pushNotifications && 'Notification' in window) {
+          if (Notification.permission === 'granted') new Notification(`Your job "${jobData.title}" has been posted`);
+          else if (Notification.permission !== 'denied') Notification.requestPermission().then(p => { if (p === 'granted') new Notification(`Your job "${jobData.title}" has been posted`); });
+        }
+        showToast('Job posted! Artisans will be notified.', 'success');
+        setPage('jobs');
+      };
+
+      const markNotificationRead = async (id) => {
+        setNotifs(curr => curr.map(item => item.id === id ? { ...item, unread: false } : item));
+        try {
+          await apiJson(`/api/notifications/${id}/read`, { method: 'PATCH' });
+        } catch (error) { }
+      };
+
+      const NAV = role === 'artisan'
+        ? [['home', '🏠', 'Dashboard'], ['explore', '🔍', 'Browse'], ['jobs', '📋', 'My Jobs'], ['profile', '👤', 'Profile']]
+        : [['home', '🏠', 'Home'], ['explore', '🔍', 'Explore'], ['jobs', '📋', 'Jobs'], ['notifications', '🔔', 'Alerts'], ['profile', '👤', 'Account']];
+
+      const SIDEBAR_ITEMS = [
+        { section: 'Main', items: NAV },
+        { section: 'Quick', items: [['jobPost', '📋', 'Post a Job'], ['notifications', '🔔', 'Notifications']] }
+      ];
+
+      if (!authChecked) return <div className="onboard-screen"><Spinner /></div>;
+      if (authChecked && !storedProfile) return <LoginScreen onCreateAccount={() => { setOnboarded(false); }} onSignedIn={(user) => { setStoredProfile(user); setOnboarded(true); setRole(user.role || 'client'); }} showToast={showToast} />;
+
+      if (!onboarded) return <OnboardingScreen onDone={handleOnboard} />;
+
+      if (profileSetup) {
+        return (
+          <ProfileSetupScreen
+            role={profileSetup.role}
+            initialProfile={profileSetup.profile}
+            onBack={() => {
+              setProfileSetup(null);
+              setOnboarded(false);
+              setRole('client');
+            }}
+            onComplete={handleProfileComplete}
+          />
+        );
+      }
+
+      const renderPage = () => {
+        switch (page) {
+          case 'home': return <HomePage artisans={artisans} onArtisan={openArtisan} onJobPost={openJobPost} setPage={setPage} />;
+          case 'explore': return <ExplorePage artisans={artisans} onArtisan={openArtisan} />;
+          case 'jobs': return <JobsPage jobs={jobs} onPayment={(j) => openPayment({ job: j })} />;
+          case 'notifications': return <NotificationsPage notifs={notifs} onMarkRead={markNotificationRead} />;
+          case 'profile': return <ProfilePage artisans={artisans} reviews={reviews} role={role} profile={storedProfile} settings={settings} onToggleSetting={handleToggleSetting} onLogout={handleLogout} onEditProfile={handleEditProfile} onEnableBiometricLogin={enablePasskeySetup} onSignInWithPasskey={signInWithPasskey} biometricSupported={supportsPasskeys()} />;
+          default: return <HomePage artisans={artisans} onArtisan={openArtisan} onJobPost={openJobPost} setPage={setPage} />;
+        }
+      };
+
+      return (
+        <div className="app-shell">
+          {/* Top Nav */}
+          <nav className="top-nav">
+            <div className="nav-logo-app">
+              <div className="logo-circle">CS</div>
+              Craft Seal
+            </div>
+            <div className="nav-spacer" />
+            <div style={{ marginRight: 4 }}>
+              <span className={`chip ${role === 'artisan' ? 'chip-copper' : 'chip-green'}`} style={{ fontSize: '0.72rem', padding: '4px 10px' }}>
+                {role === 'artisan' ? <><Icon name={'🔧'} /> Artisan</> : <><Icon name={'👤'} /> Client</>}
+              </span>
+            </div>
+            <button className="nav-icon-btn notification-dot" onClick={() => setPage('notifications')}>
+              <Icon name={'🔔'} />
+              {notifs && notifs.filter(n => n.unread).length > 0 && <span className="notif-count">{notifs.filter(n => n.unread).length}</span>}
+            </button>
+            <button className="nav-icon-btn" onClick={() => setPage('profile')}><Icon name={'👤'} /></button>
+          </nav>
+
+          {/* Sidebar (desktop) */}
+          <aside className="sidebar">
+            {NAV.map(([id, icon, label]) => (
+              <div key={id} className={`sidebar-item ${page === id ? 'active' : ''}`} onClick={() => setPage(id)}>
+                <span className="sidebar-icon"><Icon name={icon} /></span> {label}
+              </div>
+            ))}
+            <div className="sidebar-section-label">Actions</div>
+            <div className="sidebar-item" onClick={openJobPost}>
+              <span className="sidebar-icon"><Icon name={'📋'} /></span> Post a Job
+            </div>
+            <div style={{ flex: 1 }} />
+            <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border)', fontSize: '0.75rem', color: 'var(--slate-light)', lineHeight: 1.7 }}>
+              <div style={{ fontFamily: 'Syne', fontWeight: 700, color: 'var(--slate-mid)', marginBottom: 4 }}>Craft Seal</div>
+              Modern artisan marketplace<br />Powered by KoraPay
+            </div>
+          </aside>
+
+          {/* Main */}
+          <main className="main-content">{renderPage()}</main>
+
+          {/* Bottom Nav */}
+          <nav className="bottom-nav">
+            {NAV.map(([id, icon, label]) => (
+              <div key={id} className={`bottom-nav-item ${page === id ? 'active' : ''}`} onClick={() => setPage(id)}>
+                <span className="bn-icon"><Icon name={icon} /></span>
+                <span className="bn-label">{label}</span>
+              </div>
+            ))}
+          </nav>
+
+          {/* Modals */}
+          {modal?.type === 'artisan' && <ArtisanDetailModal artisan={modal.data} reviews={reviews} onClose={() => setModal(null)} onHire={handleHire} />}
+          {modal?.type === 'jobPost' && <PostJobModal onClose={() => setModal(null)} onSubmit={handleJobPost} />}
+          {modal?.type === 'payment' && <PaymentModal {...modal.data} onClose={() => setModal(null)} showToast={showToast} onPaid={async (n) => {
+            try {
+              const response = await apiJson('/api/notifications', {
+                method: 'POST',
+                body: JSON.stringify({ notification: n }),
+              });
+              if (response && Array.isArray(response.state?.notifications)) setNotifs(response.state.notifications);
+            } catch (error) { }
+            if (settings.pushNotifications && 'Notification' in window) {
+              if (Notification.permission === 'granted') try { new Notification(n.text); } catch (e) { }
+              else if (Notification.permission !== 'denied') Notification.requestPermission().then(p => { if (p === 'granted') try { new Notification(n.text); } catch (e) { } });
+            }
+          }} />}
+
+          {/* Toast */}
+          {toast && <Toast message={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+
+</html>

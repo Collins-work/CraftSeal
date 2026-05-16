@@ -1,0 +1,51 @@
+{
+  "artisans": [
+    {
+      "id": 1,
+      "role": "artisan",
+      "fullName": "Ilekuba Oluebube C",
+      "email": "ilekubaoluebubec@gmail.com",
+      "phone": "+2349116002889",
+      "location": "Nigeria, lagos",
+      "businessName": "Clinex",
+      "trade": "Plumber",
+      "experience": "3",
+      "bio": "I am a plumber",
+      "skills": [
+        "Piping"
+      ],
+      "avatar": "IO",
+      "initials": "IO",
+      "initialsLabel": "IO",
+      "cat": "all",
+      "rating": 5,
+      "jobs": 0,
+      "price": 0,
+      "color": "#1f5f3a",
+      "badge": "Verified",
+      "available": true
+    }
+  ],
+  "jobs": [
+    {
+      "id": 1,
+      "title": "Fix kitchen sink leak",
+      "cat": "plumbing",
+      "status": "pending",
+      "location": "Lagos Island, Lagos",
+      "budget": "₦12,000–18,000",
+      "date": "Just now",
+      "bids": 0,
+      "desc": "Kitchen sink is leaking under the cabinet and needs urgent repair."
+    }
+  ],
+  "notifications": [
+    {
+      "id": 1,
+      "icon": "📋",
+      "text": "New job posted: Fix kitchen sink leak",
+      "time": "Just now",
+      "unread": false
+    }
+  ]
+}
