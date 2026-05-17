@@ -5,6 +5,13 @@ const crypto = require('crypto');
 const { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } = require('@simplewebauthn/server');
 const { isoBase64URL } = require('@simplewebauthn/server/helpers');
 
+// Load environment variables from .env when present (optional)
+try {
+    require('dotenv').config();
+} catch (e) {
+    // dotenv not installed; continue using process.env
+}
+
 const SUPABASE_URL = process.env.SUPABASE_URL || null;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY || null;
 let supabase = null;
@@ -501,11 +508,47 @@ const server = http.createServer(async (req, res) => {
     }
 
     // Serve static
-    if (url.pathname === '/' || url.pathname === '/craftseal-landing.html' || url.pathname === '/craftseal-app.html') { const target = url.pathname === '/' ? 'craftseal-landing.html' : url.pathname.slice(1); serveFile(res, path.join(ROOT, target)); return; }
+    if (url.pathname === '/' || url.pathname === '/landing' || url.pathname === '/craftseal-landing.html') {
+        serveFile(res, path.join(ROOT, 'craftseal-landing.html'));
+        return;
+    }
+    if (url.pathname === '/app' || url.pathname === '/craftseal-app' || url.pathname === '/craftseal-app.html') {
+        serveFile(res, path.join(ROOT, 'craftseal-app.html'));
+        return;
+    }
     const filePath = publicPath(url.pathname); if (filePath && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) { serveFile(res, filePath); return; }
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Not found');
 });
 
+function probeExistingServer(port) {
+    return new Promise((resolve) => {
+        const req = http.get({ hostname: '127.0.0.1', port, path: '/api/state', timeout: 1500 }, (res) => {
+            resolve(res.statusCode >= 200 && res.statusCode < 500);
+            res.resume();
+        });
+        req.on('timeout', () => {
+            req.destroy();
+            resolve(false);
+        });
+        req.on('error', () => resolve(false));
+    });
+}
+
 // initialize persistence sync with Supabase (if configured), then start server
 initializePersistence().catch((e) => console.warn('initializePersistence failed', e && e.message));
+server.on('error', async (err) => {
+    if (err && err.code === 'EADDRINUSE') {
+        const alive = await probeExistingServer(PORT);
+        if (alive) {
+            console.warn(`Port ${PORT} is already in use, but Craft Seal is reachable at http://127.0.0.1:${PORT}.`);
+            process.exit(0);
+            return;
+        }
+        console.error(`Port ${PORT} is already in use by another process. Stop it or set PORT in .env.`);
+        process.exit(1);
+        return;
+    }
+    console.error('Server failed to start:', err && err.message ? err.message : err);
+    process.exit(1);
+});
 server.listen(PORT, () => console.log(`Craft Seal server running at http://127.0.0.1:${PORT}`));
