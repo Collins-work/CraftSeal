@@ -17,24 +17,10 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
     rel="stylesheet" />
-  <script src="/node_modules/react/umd/react.production.min.js?v=1"></script>
-  <script>
-    if (!window.React) {
-      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"><\\/script>');
-    }
-  </script>
-  <script src="/node_modules/react-dom/umd/react-dom.production.min.js?v=1"></script>
-  <script>
-    if (!window.ReactDOM) {
-      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"><\\/script>');
-    }
-  </script>
-  <script src="/node_modules/@babel/standalone/babel.min.js?v=1"></script>
-  <script>
-    if (!window.Babel) {
-      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"><\\/script>');
-    }
-  </script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin
+    src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
   <style>
     *,
     *::before,
@@ -3047,8 +3033,8 @@
     }
 
     const rootEl = document.getElementById('root');
-    if (!window.React || !window.ReactDOM) {
-      rootEl.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#07101f;color:#e5e7eb;font-family:DM Sans,sans-serif;text-align:center;">App scripts failed to load. Hard refresh with Ctrl+F5, then try again.</div>';
+    if (!window.React || !window.ReactDOM || !window.Babel) {
+      rootEl.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#07101f;color:#e5e7eb;font-family:DM Sans,sans-serif;text-align:center;"><div>⚠️ Failed to load required libraries.<br/><br/>Please check your internet connection and reload the page (Ctrl+R or Cmd+R).</div></div>';
     } else {
       ReactDOM.render(<App />, rootEl);
     }

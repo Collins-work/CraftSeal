@@ -1729,8 +1729,8 @@
   <script>
     (function () {
       var appEntry = window.location.protocol === 'file:'
-        ? 'http://127.0.0.1:3001/craftseal-app.html'
-        : '/craftseal-app.html';
+        ? 'craftseal-app.html'
+        : 'craftseal-app.html';
       document.querySelectorAll('a[href="craftseal-app.html"], a[href="/craftseal-app.html"], a[href="http://127.0.0.1:3001/craftseal-app.html"]').forEach(function (link) {
         link.setAttribute('href', appEntry);
       });
