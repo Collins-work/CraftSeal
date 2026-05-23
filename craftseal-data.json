@@ -1,4 +1,19 @@
 {
+  "users": [
+    {
+      "id": 1,
+      "email": "test@example.com",
+      "fullName": "Test User",
+      "role": "client",
+      "phone": "+2348000000000",
+      "location": "Lagos",
+      "businessName": "Home",
+      "created_at": "2026-05-17T21:09:45.198Z",
+      "passwordSalt": "4f6ed1eb551f0780adfbf9e9f0f31782",
+      "passwordHash": "49a6be4d1d08b8186f8bf38ef7eaf85046c038e10c47bbcc18ef0b9655c9a5864eabd28ee113ece7b49dc68c76b88af75f71cf27811691498ffe2f2727fc9a9c",
+      "passkeys": []
+    }
+  ],
   "artisans": [
     {
       "id": 1,
@@ -39,6 +54,8 @@
       "desc": "Kitchen sink is leaking under the cabinet and needs urgent repair."
     }
   ],
+  "bids": [],
+  "reviews": [],
   "notifications": [
     {
       "id": 1,
@@ -47,5 +64,14 @@
       "time": "Just now",
       "unread": false
     }
-  ]
+  ],
+  "authSessions": {
+    "2b1004e6e40b0a35157d4cbf1c507786cdf75306ed0201b0": {
+      "userId": 1,
+      "createdAt": 1779052185199,
+      "expiresAt": 1779656985200
+    }
+  },
+  "passkeys": [],
+  "paymentIntents": []
 }

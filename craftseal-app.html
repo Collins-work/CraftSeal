@@ -1942,9 +1942,9 @@
       const [search, setSearch] = useState('');
       const [cat, setCat] = useState('all');
 
-      const filtered = artisans.filter(a =>
-        (cat === 'all' || a.cat === cat) &&
-        (a.name.toLowerCase().includes(search.toLowerCase()) || a.trade.toLowerCase().includes(search.toLowerCase()))
+      const filtered = (Array.isArray(artisans) ? artisans : []).filter(a =>
+        (cat === 'all' || a?.cat === cat) &&
+        ((a?.name || '').toLowerCase().includes(search.toLowerCase()) || (a?.trade || '').toLowerCase().includes(search.toLowerCase()))
       );
 
       return (
