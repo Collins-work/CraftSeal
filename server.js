@@ -12,17 +12,16 @@ try {
     // dotenv not installed; continue using process.env
 }
 
-const SUPABASE_URL = process.env.SUPABASE_URL || null;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY || null;
-let supabase = null;
-if (SUPABASE_URL && SUPABASE_KEY) {
+const DATABASE_URL = process.env.DATABASE_URL || null;
+let pgClient = null;
+if (DATABASE_URL) {
     try {
-        const { createClient } = require('@supabase/supabase-js');
-        supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-        console.log('Supabase client initialized');
+        const { Client } = require('pg');
+        pgClient = new Client({ connectionString: DATABASE_URL });
+        pgClient.connect().then(() => console.log('Postgres client connected')).catch((e) => { console.warn('Postgres connect failed', e.message); pgClient = null; });
     } catch (e) {
-        console.warn('Supabase client not available (npm package missing) or failed to initialize:', e.message);
-        supabase = null;
+        console.warn('pg client not available or failed to initialize:', e.message);
+        pgClient = null;
     }
 }
 
@@ -65,33 +64,36 @@ function readData() {
 
 function writeData(data) {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-    if (supabase) {
+    if (pgClient) {
+        (async () => {
             try {
-                supabase.from('states').upsert({ id: 1, data }, { returning: 'minimal' }).catch((err) => console.warn('Supabase upsert error', err && err.message));
+                await pgClient.query(`CREATE TABLE IF NOT EXISTS states (id integer PRIMARY KEY, data jsonb)`);
+                await pgClient.query(`INSERT INTO states (id, data) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data`, [1, data]);
             } catch (e) {
-                console.warn('Supabase write failed', e.message);
+                console.warn('Postgres upsert error', e && e.message);
             }
+        })();
     }
 }
 
     
 async function initializePersistence() {
-    if (!supabase) return;
+    if (!pgClient) return;
     try {
-        const { data, error } = await supabase.from('states').select('data').maybeSingle();
-        if (!error && data && data.data) {
-            fs.writeFileSync(DATA_FILE, JSON.stringify(data.data, null, 2));
-            console.log('Loaded state from Supabase into local persistence');
+        await pgClient.query(`CREATE TABLE IF NOT EXISTS states (id integer PRIMARY KEY, data jsonb)`);
+        const res = await pgClient.query('SELECT data FROM states WHERE id = $1', [1]);
+        if (res && res.rows && res.rows.length > 0 && res.rows[0].data) {
+            fs.writeFileSync(DATA_FILE, JSON.stringify(res.rows[0].data, null, 2));
+            console.log('Loaded state from Postgres into local persistence');
         } else {
-        
             if (fs.existsSync(DATA_FILE)) {
                 const local = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-                await supabase.from('states').upsert({ id: 1, data: local }, { returning: 'minimal' });
-                console.log('Pushed local state to Supabase');
+                await pgClient.query('INSERT INTO states (id, data) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data', [1, local]);
+                console.log('Pushed local state to Postgres');
             }
         }
     } catch (e) {
-        console.warn('initializePersistence error', e.message);
+        console.warn('initializePersistence error', e && e.message);
     }
 }
 
