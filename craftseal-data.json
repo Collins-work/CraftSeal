@@ -12,6 +12,20 @@
       "passwordSalt": "4f6ed1eb551f0780adfbf9e9f0f31782",
       "passwordHash": "49a6be4d1d08b8186f8bf38ef7eaf85046c038e10c47bbcc18ef0b9655c9a5864eabd28ee113ece7b49dc68c76b88af75f71cf27811691498ffe2f2727fc9a9c",
       "passkeys": []
+    },
+    {
+      "id": 2,
+      "email": "ilekubaoluebubec@gmail.com",
+      "fullName": "Ilekuba Oluebube C",
+      "role": "client",
+      "phone": "+2349116002889",
+      "location": "Nigeria, lagos",
+      "address": "lalal",
+      "businessName": "Clinex",
+      "created_at": "2026-05-29T14:06:09.098Z",
+      "passwordSalt": "4918ec162cbc6d1117f56085e82a1070",
+      "passwordHash": "fb5fe2fe23ff6aa36c0090ed0f5a4b963b99b1cf015e97060ea43f96dc88c3dcbe364352c2cb656ad84f2680f677bd107b4269d95c1bafc19c806bd634540db3",
+      "passkeys": []
     }
   ],
   "artisans": [
@@ -65,6 +79,7 @@
       "unread": false
     }
   ],
+  "chats": [],
   "authSessions": {
     "2b1004e6e40b0a35157d4cbf1c507786cdf75306ed0201b0": {
       "userId": 1,

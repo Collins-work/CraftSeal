@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;600;700&display=swap"
     rel="stylesheet" />
   <style>
     *,
@@ -54,10 +54,53 @@
     }
 
     body {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
       background: var(--sand);
       color: var(--ink);
       overflow-x: hidden;
+    }
+
+    /* Narrow readable text for better line length */
+    .hero-content,
+    .hero-sub,
+    .section-sub,
+    .how-card p,
+    .feature-card p,
+    .inc-card p,
+    .cta-section p,
+    .dual-panel p,
+    .payment-section .section-sub,
+    .footer-brand p {
+      max-width: 68ch;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Constrain and center the hero so elements don't feel spread out */
+    .hero {
+      display: flex;
+      align-items: center;
+      min-height: 72vh;
+      position: relative;
+      padding: 40px 20px;
+    }
+
+    .hero-content {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 20px 12px;
+      text-align: left;
+      z-index: 2;
+    }
+
+    .hero-float {
+      position: absolute;
+      right: 6%;
+      top: 8%;
+      transform: translateY(0);
+      max-width: 520px;
+      z-index: 3;
+      pointer-events: none;
     }
 
     .logo-mark,
@@ -181,11 +224,14 @@
     /* ── HERO ── */
     .hero {
       min-height: 100vh;
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(340px, 1fr) minmax(300px, 520px);
+      gap: 40px;
       align-items: center;
-      padding: 120px 5vw 80px;
+      padding: 100px 5vw 80px;
       position: relative;
-      overflow: hidden;
+      overflow: visible;
+      align-content: center;
     }
 
     .hero-bg {
@@ -211,6 +257,7 @@
       position: relative;
       z-index: 1;
       max-width: 640px;
+      margin-left: 0;
     }
 
     .hero-badge {
@@ -324,11 +371,61 @@
 
     .hero-float {
       position: absolute;
-      right: 5vw;
+      right: 25vw;
       top: 50%;
       transform: translateY(-50%);
-      width: min(420px, 42vw);
-      z-index: 1;
+      max-width: 460px;
+      z-index: 5;
+      pointer-events: none;
+      display: grid;
+      gap: 18px;
+    }
+
+    /* Reduce grid lines visibility so background doesn't compete with content */
+    .hero-grid-lines {
+      opacity: 0.02;
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 80px 4vw;
+      }
+
+      .hero-float {
+        display: none;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .nav-app-cta {
+        display: inline-block;
+      }
+
+      .hero {
+        padding-top: 120px;
+      }
+
+      .hero-content {
+        text-align: center;
+      }
+
+      h1 {
+        text-align: center;
+      }
+    }
+
+    @media (min-width: 1400px) {
+      .hero {
+        grid-template-columns: 1fr 560px;
+      }
+
+      .hero-float {
+        max-width: 540px;
+        transform: translateX(-8%);
+      }
     }
 
     .hero-card-stack {
@@ -496,7 +593,7 @@
     .stat-lab {
       font-size: 0.72rem;
       color: var(--slate-light);
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
     }
 
     /* ── STATS BAR ── */
@@ -750,10 +847,12 @@
     }
 
     .dual-list li::before {
-      content: '✓';
+      content: '';
       min-width: 22px;
       height: 22px;
       background: var(--forest);
+      -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M9.2 17.2 4.8 12.8 3.4 14.2 9.2 20l12-12-1.4-1.4z'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M9.2 17.2 4.8 12.8 3.4 14.2 9.2 20l12-12-1.4-1.4z'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
       color: white;
       border-radius: 50%;
       display: flex;
@@ -1252,7 +1351,7 @@
     </symbol>
   </svg>
 
-  <!-- Platform Banner -->
+
   <div class="platform-banner" data-country-banner>
     <span class="inline-icon" style="width:1.05em;height:1.05em;color:white;margin-right:6px;"><svg aria-hidden="true">
         <use href="#icon-star"></use>
@@ -1260,7 +1359,7 @@
       with technology</span>
   </div>
 
-  <!-- Navigation -->
+
   <nav id="nav">
     <a href="#home" class="nav-logo">
       <div class="logo-mark logo-mark--small"><svg aria-hidden="true">
@@ -1281,7 +1380,7 @@
     </div>
   </nav>
 
-  <!-- Hero -->
+
   <section class="hero" id="home">
     <div class="hero-bg"></div>
     <div class="hero-grid-lines"></div>
@@ -1312,10 +1411,10 @@
       </div>
     </div>
 
-    <!-- Floating Cards -->
+
     <div class="hero-float">
       <div class="hero-card-stack">
-        <!-- Card 1 -->
+
         <div class="h-card h-card-1">
           <div class="artisan-card-header">
             <div class="artisan-avatar av-1">TK</div>
@@ -1323,10 +1422,29 @@
               <div class="artisan-name">Tunde Kayode</div>
               <div class="artisan-trade">Master Electrician</div>
             </div>
-            <div class="verified-badge">✓ Verified</div>
+            <div class="verified-badge"><span class="ui-icon icon-forest"
+                style="width:0.95rem;height:0.95rem;margin-right:4px;"><svg aria-hidden="true">
+                  <use href="#icon-check"></use>
+                </svg></span>Verified</div>
           </div>
           <div class="rating-row">
-            <span class="stars">★★★★★</span>
+            <span style="display:inline-flex;gap:2px;align-items:center;">
+              <span class="ui-icon icon-forest" style="width:0.78rem;height:0.78rem;"><svg aria-hidden="true">
+                  <use href="#icon-star"></use>
+                </svg></span>
+              <span class="ui-icon icon-forest" style="width:0.78rem;height:0.78rem;"><svg aria-hidden="true">
+                  <use href="#icon-star"></use>
+                </svg></span>
+              <span class="ui-icon icon-forest" style="width:0.78rem;height:0.78rem;"><svg aria-hidden="true">
+                  <use href="#icon-star"></use>
+                </svg></span>
+              <span class="ui-icon icon-forest" style="width:0.78rem;height:0.78rem;"><svg aria-hidden="true">
+                  <use href="#icon-star"></use>
+                </svg></span>
+              <span class="ui-icon icon-forest" style="width:0.78rem;height:0.78rem;"><svg aria-hidden="true">
+                  <use href="#icon-star"></use>
+                </svg></span>
+            </span>
             <span class="rating-num">4.9</span>
             <span style="font-size:0.78rem;color:var(--slate-light)">(127 jobs)</span>
           </div>
@@ -1336,7 +1454,7 @@
             <span class="skill-tag">Solar</span>
           </div>
         </div>
-        <!-- Card 2 -->
+
         <div class="h-card h-card-2">
           <div style="font-size:0.78rem;color:var(--slate-light);margin-bottom:6px;">New Job Request</div>
           <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:8px;">Bathroom
@@ -1354,7 +1472,7 @@
               ₦19,800</div>
           </div>
         </div>
-        <!-- Card 3 -->
+
         <div class="h-card h-card-3">
           <div style="display:flex;align-items:center;gap:10px;">
             <span class="ui-icon icon-forest" style="width:1.4rem;height:1.4rem;"><svg aria-hidden="true">
@@ -1370,9 +1488,12 @@
           </div>
         </div>
 
-        <!-- Floating Stats -->
+
         <div class="hero-stat hs-1">
-          <div class="stat-val">4.8★</div>
+          <div class="stat-val" style="display:inline-flex;align-items:center;gap:4px;">4.8 <span
+              class="ui-icon icon-forest" style="width:0.85em;height:0.85em;"><svg aria-hidden="true">
+                <use href="#icon-star"></use>
+              </svg></span></div>
           <div class="stat-lab">Avg Artisan Rating</div>
         </div>
         <div class="hero-stat hs-2">
@@ -1383,7 +1504,7 @@
     </div>
   </section>
 
-  <!-- Stats Bar -->
+
   <div class="stats-bar">
     <div class="stat-item">
       <div class="val">2,400+</div>
@@ -1403,7 +1524,7 @@
     </div>
   </div>
 
-  <!-- How It Works -->
+
   <section id="how-it-works">
     <div class="section-tag">How It Works</div>
     <h2>From request to<br />completed job — simplified</h2>
@@ -1459,7 +1580,7 @@
     </div>
   </section>
 
-  <!-- Features -->
+
   <section class="features-section" id="features">
     <div class="section-tag">Platform Features</div>
     <h2>Everything you need.<br />Nothing you don't.</h2>
@@ -1516,7 +1637,7 @@
     </div>
   </section>
 
-  <!-- For Artisans / Clients -->
+
   <section id="artisans" style="padding:0;">
     <div class="dual-section">
       <div class="dual-panel artisan">
@@ -1557,7 +1678,7 @@
     </div>
   </section>
 
-  <!-- Inclusive Access -->
+
   <section>
     <div class="section-tag">Inclusive Design</div>
     <h2>Built for every artisan.<br />No one left behind.</h2>
@@ -1590,7 +1711,7 @@
     </div>
   </section>
 
-  <!-- Payment -->
+
   <section class="payment-section" id="payment">
     <div class="payment-inner">
       <div>
@@ -1660,13 +1781,15 @@
         </div>
         <div
           style="margin-top:24px;padding:14px;background:rgba(21,128,61,0.15);border:1px solid rgba(21,128,61,0.3);border-radius:10px;font-size:0.82rem;color:#22c55e;display:flex;gap:8px;align-items:center;">
-          <span>✓</span> Both mock and live modes supported in the app
+          <span class="ui-icon icon-forest" style="width:0.9em;height:0.9em;flex:0 0 auto;"><svg aria-hidden="true">
+              <use href="#icon-check"></use>
+            </svg></span> Both mock and live modes supported in the app
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CTA -->
+
   <section class="cta-section">
     <div class="section-tag" style="color:rgba(255,255,255,0.7);justify-content:center;">
       <span
@@ -1685,7 +1808,7 @@
     </div>
   </section>
 
-  <!-- Footer -->
+
   <footer>
     <div class="footer-top">
       <div class="footer-brand">
@@ -1717,9 +1840,10 @@
         <a href="#home">About Us</a>
         <a href="craftseal-app.html">Entry</a>
         <a href="mailto:hello@craftseal.ng">Contact</a>
-        <a href="#payment">Privacy Policy</a>
+        <a href="https://craftseal.ng/privacy" target="_blank" rel="noopener">Privacy Policy</a>
       </div>
     </div>
+
     <div class="footer-bottom">
       <div>© 2026 Craft Seal. Built for a modern artisan marketplace.</div>
       <div>Powered by <span style="color:var(--forest-light);">Craft Seal</span></div>
@@ -1729,10 +1853,14 @@
   <script>
     (function () {
       var appEntry = window.location.protocol === 'file:'
-        ? 'craftseal-app.html'
-        : 'craftseal-app.html';
+        ? 'http://127.0.0.1:3001/app'
+        : '/app';
       document.querySelectorAll('a[href="craftseal-app.html"], a[href="/craftseal-app.html"], a[href="http://127.0.0.1:3001/craftseal-app.html"]').forEach(function (link) {
         link.setAttribute('href', appEntry);
+        link.addEventListener('click', function (event) {
+          event.preventDefault();
+          window.location.href = appEntry;
+        });
       });
 
       var badge = document.querySelector('[data-country-badge]');

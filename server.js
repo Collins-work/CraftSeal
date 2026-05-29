@@ -52,29 +52,29 @@ function readData() {
             bids: [],
             reviews: [],
             notifications: [],
+            chats: [],
             authSessions: {},
             passkeys: [],
             paymentIntents: [],
             ...data,
         };
     } catch (e) {
-        return { users: [], artisans: [], jobs: [], bids: [], reviews: [], notifications: [], authSessions: {}, passkeys: [], paymentIntents: [] };
+        return { users: [], artisans: [], jobs: [], bids: [], reviews: [], notifications: [], chats: [], authSessions: {}, passkeys: [], paymentIntents: [] };
     }
 }
 
 function writeData(data) {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
     if (supabase) {
-        // upsert the whole app state into a single row in table `states` (id=1, data JSONB)
-        try {
-            supabase.from('states').upsert({ id: 1, data }, { returning: 'minimal' }).catch((err) => console.warn('Supabase upsert error', err && err.message));
-        } catch (e) {
-            console.warn('Supabase write failed', e.message);
-        }
+            try {
+                supabase.from('states').upsert({ id: 1, data }, { returning: 'minimal' }).catch((err) => console.warn('Supabase upsert error', err && err.message));
+            } catch (e) {
+                console.warn('Supabase write failed', e.message);
+            }
     }
 }
 
-// Attempt an initial sync from Supabase into the local file if configured.
+    
 async function initializePersistence() {
     if (!supabase) return;
     try {
@@ -83,7 +83,7 @@ async function initializePersistence() {
             fs.writeFileSync(DATA_FILE, JSON.stringify(data.data, null, 2));
             console.log('Loaded state from Supabase into local persistence');
         } else {
-            // if no remote row, push local file up
+        
             if (fs.existsSync(DATA_FILE)) {
                 const local = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
                 await supabase.from('states').upsert({ id: 1, data: local }, { returning: 'minimal' });
@@ -217,7 +217,7 @@ const server = http.createServer(async (req, res) => {
     const state = readData();
     const currentUser = getUserFromRequest(state, req);
 
-    // state endpoint
+    
     if (url.pathname === '/api/state' && req.method === 'GET') {
         sendJson(res, 200, {
             ...state,
@@ -246,6 +246,7 @@ const server = http.createServer(async (req, res) => {
             role: body.role,
             phone: body.phone || '',
             location: body.location || '',
+            address: body.address || '',
             businessName: body.businessName || '',
             created_at: new Date().toISOString(),
             passwordSalt: password.salt,
@@ -259,6 +260,8 @@ const server = http.createServer(async (req, res) => {
                 user_id: user.id,
                 fullName: body.fullName,
                 email,
+                location: body.location || '',
+                address: body.address || '',
                 trade: body.trade || '',
                 skills: Array.isArray(body.skills) ? body.skills : [],
                 rating: null,
@@ -350,7 +353,7 @@ const server = http.createServer(async (req, res) => {
         const credentials = state.passkeys.filter((cred) => Number(cred.userId) === Number(user.id)).map((cred) => ({ id: cred.credentialID, type: 'public-key', transports: cred.transports || ['internal'] }));
         const options = await generateAuthenticationOptions({
             rpID: RP_ID,
-            userVerification: 'preferred',
+            userVerification: 'required',
             allowCredentials: credentials,
         });
         state.authSessions[`webauthn-login:${user.id}`] = { challenge: options.challenge, type: 'login', userId: user.id, createdAt: Date.now(), expiresAt: Date.now() + 5 * 60 * 1000 };
@@ -391,33 +394,33 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // SSE
+    
     if (url.pathname === '/api/events' && req.method === 'GET') {
         res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-cache, no-transform', Connection: 'keep-alive', 'Access-Control-Allow-Origin': '*' });
         res.write('\n'); clients.push(res); req.on('close', () => { clients = clients.filter(c => c !== res); }); return;
     }
 
-    // Users: create simple user (client or artisan). For artisans, they also get an artisan record.
+    
     if (url.pathname === '/api/users' && req.method === 'POST') {
         const body = await parseBody(req);
         if (!body || !body.email || !body.role) return sendJson(res, 400, { error: 'Missing user email or role' });
-        const user = { id: nextId(state.users), email: body.email, name: body.fullName || body.name || '', role: body.role, created_at: new Date().toISOString() };
+        const user = { id: nextId(state.users), email: body.email, name: body.fullName || body.name || '', role: body.role, location: body.location || '', address: body.address || '', created_at: new Date().toISOString() };
         state.users.push(user);
         if (body.role === 'artisan') {
-            const artisan = { id: nextId(state.artisans), user_id: user.id, fullName: user.name, email: user.email, trade: body.trade || '', skills: body.skills || [], rating: null, reviewCount: 0, jobsDone: 0, available: true };
+            const artisan = { id: nextId(state.artisans), user_id: user.id, fullName: user.name, email: user.email, location: body.location || '', address: body.address || '', trade: body.trade || '', skills: body.skills || [], rating: null, reviewCount: 0, jobsDone: 0, available: true };
             state.artisans.push(artisan);
         }
         writeData(state); broadcast(state);
         sendJson(res, 201, { user, state }); return;
     }
 
-    // Add review
+    
     if (url.pathname === '/api/reviews' && req.method === 'POST') {
         const body = await parseBody(req);
         if (!body || !body.artisan_id || !body.user_id || !body.rating) return sendJson(res, 400, { error: 'Missing review fields' });
         const review = { id: nextId(state.reviews), artisan_id: Number(body.artisan_id), user_id: Number(body.user_id), rating: Number(body.rating), text: body.text || '', created_at: new Date().toISOString() };
         state.reviews.unshift(review);
-        // recompute artisan rating
+        
         const artisanReviews = state.reviews.filter(r => Number(r.artisan_id) === Number(body.artisan_id));
         const art = state.artisans.find(a => Number(a.id) === Number(body.artisan_id));
         if (art) { art.rating = computeRating(artisanReviews); art.reviewCount = artisanReviews.length; }
@@ -425,7 +428,7 @@ const server = http.createServer(async (req, res) => {
         writeData(state); broadcast(state); sendJson(res, 201, { review, state }); return;
     }
 
-    // Add bid
+    
     if (url.pathname === '/api/bids' && req.method === 'POST') {
         const body = await parseBody(req);
         if (!body || !body.job_id || !body.artisan_id || !body.amount) return sendJson(res, 400, { error: 'Missing bid fields' });
@@ -435,7 +438,7 @@ const server = http.createServer(async (req, res) => {
         writeData(state); broadcast(state); sendJson(res, 201, { bid, state }); return;
     }
 
-    // Jobs create
+    
     if (url.pathname === '/api/jobs' && req.method === 'POST') {
         const body = await parseBody(req);
         if (!body || !body.title || !body.user_id) return sendJson(res, 400, { error: 'Missing job fields' });
@@ -445,7 +448,7 @@ const server = http.createServer(async (req, res) => {
         writeData(state); broadcast(state); sendJson(res, 201, { job, state }); return;
     }
 
-    // Patch job (e.g., accept bid, mark in-progress, complete)
+    
     if (url.pathname.startsWith('/api/jobs/') && req.method === 'PATCH') {
         const id = Number(url.pathname.split('/')[3]);
         const body = await parseBody(req);
@@ -455,7 +458,7 @@ const server = http.createServer(async (req, res) => {
         writeData(state); broadcast(state); sendJson(res, 200, { job, state }); return;
     }
 
-    // Notifications
+    
     if (url.pathname === '/api/notifications' && req.method === 'POST') {
         const body = await parseBody(req);
         const note = createNotification(state, body.text || 'Notification', body.icon || '💬');
@@ -469,7 +472,7 @@ const server = http.createServer(async (req, res) => {
         note.unread = false; writeData(state); broadcast(state); sendJson(res, 200, { notification: note, state }); return;
     }
 
-    // Payment initialize using tokenized KoraPay checkout
+    
     if (url.pathname === '/api/payments/init' && req.method === 'POST') {
         const body = await parseBody(req);
         const reference = `CS-${Date.now()}`;
@@ -507,12 +510,41 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // Serve static
+    
+    if (url.pathname === '/api/chats' && req.method === 'GET') {
+        
+        const q = Object.fromEntries(url.searchParams.entries());
+        let chats = Array.isArray(state.chats) ? state.chats : [];
+        if (q.job_id) chats = chats.filter(c => Number(c.job_id) === Number(q.job_id));
+        if (q.user_id) chats = chats.filter(c => Number(c.user_id) === Number(q.user_id));
+        if (q.artisan_id) chats = chats.filter(c => Number(c.artisan_id) === Number(q.artisan_id));
+        sendJson(res, 200, { chats, state }); return;
+    }
+
+    if (url.pathname === '/api/chats' && req.method === 'POST') {
+        const body = await parseBody(req);
+        if (!body || (!body.job_id && !body.chatId) || !body.sender_id || !body.text) return sendJson(res, 400, { error: 'Missing chat fields' });
+        let chat = null;
+        if (body.chatId) chat = state.chats.find(c => Number(c.id) === Number(body.chatId));
+        if (!chat) {
+            
+            chat = { id: nextId(state.chats || []), job_id: Number(body.job_id), user_id: Number(body.user_id || 0), artisan_id: Number(body.artisan_id || 0), messages: [] };
+            state.chats = state.chats || [];
+            state.chats.unshift(chat);
+        }
+        const msg = { id: nextId(chat.messages || []), sender_id: Number(body.sender_id), text: String(body.text || ''), time: nowLabel() };
+        chat.messages = chat.messages || [];
+        chat.messages.push(msg);
+        createNotification(state, `New message in job ${chat.job_id}`);
+        writeData(state); broadcast(state); sendJson(res, 201, { chat, msg, state }); return;
+    }
+
+    
     if (url.pathname === '/' || url.pathname === '/landing' || url.pathname === '/craftseal-landing.html') {
         serveFile(res, path.join(ROOT, 'craftseal-landing.html'));
         return;
     }
-    if (url.pathname === '/app' || url.pathname === '/craftseal-app' || url.pathname === '/craftseal-app.html') {
+    if (url.pathname === '/app' || url.pathname === '/craftseal-app' || url.pathname === '/craftseal-app.html' || url.pathname.startsWith('/app/')) {
         serveFile(res, path.join(ROOT, 'craftseal-app.html'));
         return;
     }

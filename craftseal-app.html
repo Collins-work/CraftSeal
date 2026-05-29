@@ -94,7 +94,7 @@
       width: 34px;
       height: 34px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--copper), var(--copper-light));
+      background: var(--copper);
       color: white;
       display: flex;
       align-items: center;
@@ -114,7 +114,7 @@
       --green-pale: rgba(21, 128, 61, 0.18);
       --red-pale: rgba(185, 28, 28, 0.18);
       color-scheme: dark;
-      background: radial-gradient(circle at top, #1a2430 0%, #0f1720 55%, #090d13 100%);
+      background: var(--paper);
     }
 
     * {
@@ -952,7 +952,7 @@
 
     /* Profile */
     .profile-hero {
-      background: linear-gradient(135deg, var(--ink) 0%, #1a2633 100%);
+      background: #1a2633;
       padding: 32px 20px 0;
       text-align: center;
     }
@@ -1389,7 +1389,7 @@
     }
 
     .setup-hero {
-      background: linear-gradient(135deg, var(--ink) 0%, #1a2633 100%);
+      background: #1a2633;
       color: white;
       padding: 24px;
     }
@@ -1479,7 +1479,7 @@
     /* Map placeholder */
     .map-placeholder {
       height: 180px;
-      background: linear-gradient(135deg, #e8f4f8, #d4e8ef);
+      background: #e8f4f8;
       border-radius: var(--r-md);
       display: flex;
       align-items: center;
@@ -1681,7 +1681,20 @@
     };
 
     // ── HELPERS ────────────────────────────────────────────
-    const stars = (n) => '★'.repeat(n) + '☆'.repeat(5 - n);
+    const stars = (n) => {
+      const filled = Math.max(0, Math.min(5, Number(n) || 0));
+      return (
+        <span style={{ display: 'inline-flex', gap: 2, alignItems: 'center' }} aria-label={`Rated ${filled} out of 5`}>
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Icon
+              key={index}
+              name="icon-star"
+              style={{ width: 11, height: 11, color: index < filled ? 'var(--gold)' : 'var(--border)', opacity: index < filled ? 1 : 0.5 }}
+            />
+          ))}
+        </span>
+      );
+    };
     const fmt = (n) => `₦${n.toLocaleString()}`;
     const DEFAULT_SETTINGS = {
       darkMode: false,
@@ -1698,6 +1711,7 @@
       email: '',
       phone: '',
       location: '',
+      address: '',
       businessName: '',
       trade: '',
       experience: '',
@@ -1712,6 +1726,83 @@
       .join('')
       .toUpperCase()
       .slice(0, 2) || 'CS';
+
+    const LOCATION_STOP_WORDS = new Set([
+      'street', 'st', 'road', 'rd', 'avenue', 'ave', 'lane', 'ln', 'close', 'near', 'nr', 'opp', 'opposite',
+      'behind', 'beside', 'district', 'area', 'estate', 'estate.', 'phase', 'block', 'plot', 'compound', 'main',
+      'house', 'hse', 'flat', 'apartment', 'suite', 'unit', 'no', 'number', 'room', 'shop', 'city', 'town', 'village'
+    ]);
+
+    function normalizeLocationInput(value = '') {
+      return String(value || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9,\-\/\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function getLocationSegments(value = '') {
+      return normalizeLocationInput(value)
+        .split(/[,\-\/|]+/)
+        .map(part => part.trim())
+        .filter(Boolean);
+    }
+
+    function getLocationTokens(value = '') {
+      return getLocationSegments(value)
+        .join(' ')
+        .split(/\s+/)
+        .map(token => token.replace(/[^a-z0-9]/g, ''))
+        .filter(token => token && token.length > 1 && !LOCATION_STOP_WORDS.has(token));
+    }
+
+    function getProfileLocation(profile) {
+      return profile?.address || profile?.location || profile?.businessName || '';
+    }
+
+    function locationMatchScore(viewerLocation, targetLocation) {
+      const viewer = normalizeLocationInput(viewerLocation);
+      const target = normalizeLocationInput(targetLocation);
+      if (!viewer || !target) return 0;
+      if (viewer === target) return 1;
+
+      const viewerSegments = getLocationSegments(viewer);
+      const targetSegments = getLocationSegments(target);
+      let score = 0;
+
+      const viewerTail = viewerSegments.slice(-2).join(' ');
+      const targetTail = targetSegments.slice(-2).join(' ');
+      if (viewerTail && targetTail && viewerTail === targetTail) score = Math.max(score, 0.9);
+
+      const viewerLast = viewerSegments[viewerSegments.length - 1];
+      const targetLast = targetSegments[targetSegments.length - 1];
+      if (viewerLast && targetLast && viewerLast === targetLast) score = Math.max(score, 0.8);
+
+      const viewerTokens = new Set(getLocationTokens(viewer));
+      const targetTokens = new Set(getLocationTokens(target));
+      const sharedTokens = [...viewerTokens].filter(token => targetTokens.has(token));
+      const unionSize = new Set([...viewerTokens, ...targetTokens]).size || 1;
+      const tokenOverlap = sharedTokens.length / unionSize;
+
+      if (sharedTokens.length >= 3) score = Math.max(score, 0.7);
+      else if (sharedTokens.length >= 2) score = Math.max(score, 0.6);
+      else if (sharedTokens.length >= 1) score = Math.max(score, 0.4);
+
+      if (!score && (viewer.includes(target) || target.includes(viewer))) {
+        score = 0.55;
+      }
+
+      return Math.max(score, tokenOverlap);
+    }
+
+    function getProximityLabel(score) {
+      if (!score) return '';
+      if (score >= 0.95) return 'Exact area';
+      if (score >= 0.8) return 'Same zone';
+      if (score >= 0.6) return 'Nearby';
+      if (score >= 0.35) return 'Close by';
+      return 'Farther away';
+    }
 
     async function apiJson(path, options = {}) {
       const response = await fetch(apiUrl(path), {
@@ -1729,6 +1820,10 @@
       const map = {
         '🔍': 'icon-search', '⚡': 'icon-rocket', '✅': 'icon-check', '💬': 'icon-chat', '🔒': 'icon-lock', '⭐': 'icon-star', '📋': 'icon-store', '💳': 'icon-wallet', '📍': 'icon-search', '🔧': 'icon-shield', '📲': 'icon-phone', '📟': 'icon-ussd', '🏪': 'icon-store', '🔔': 'icon-chat', '👤': 'icon-shield'
       };
+      // If caller passed a literal symbol id like 'icon-check', render that SVG
+      if (typeof name === 'string' && name.startsWith('icon-')) {
+        return <span className={`ui-icon ${className}`} style={style}><svg aria-hidden="true"><use href={`#${name}`} /></svg></span>;
+      }
       const id = map[name];
       if (id) return <span className={`ui-icon ${className}`} style={style}><svg aria-hidden="true"><use href={`#${id}`} /></svg></span>;
       return <span className={className} style={style}>{name}</span>;
@@ -1774,7 +1869,7 @@
       const initials = getInitials(form.fullName || (role === 'artisan' ? 'Artisan' : 'Client'));
 
       const handleSubmit = () => {
-        if (!form.fullName.trim() || !form.email.trim() || !form.phone.trim() || !form.location.trim()) {
+        if (!form.fullName.trim() || !form.email.trim() || !form.phone.trim() || !form.location.trim() || !form.address.trim()) {
           setError('Please complete the required fields.');
           return;
         }
@@ -1797,6 +1892,7 @@
           email: form.email.trim(),
           phone: form.phone.trim(),
           location: form.location.trim(),
+          address: form.address.trim(),
           businessName: form.businessName.trim(),
           trade: role === 'artisan' ? form.trade.trim() : '',
           experience: role === 'artisan' ? form.experience.trim() : '',
@@ -1852,6 +1948,12 @@
                   <label className="input-label">Location</label>
                   <input className="input-field" value={form.location} onChange={e => setField('location', e.target.value)} placeholder="City, State" />
                 </div>
+              </div>
+
+              <div className="input-group">
+                <label className="input-label">Address (private)</label>
+                <input className="input-field" value={form.address} onChange={e => setField('address', e.target.value)} placeholder="Street address, area, city" />
+                <div style={{ marginTop: 6, fontSize: '0.78rem', color: 'var(--slate-light)' }}>Used only for nearby matching. It is not shown publicly.</div>
               </div>
 
               <div className="input-group">
@@ -1914,6 +2016,7 @@
     }
 
     function ArtisanCard({ a, onTap }) {
+      const proximityLabel = getProximityLabel(a.nearbyScore);
       return (
         <div className="artisan-card" onClick={() => onTap(a)}>
           <div className="ac-header">
@@ -1923,7 +2026,10 @@
               <div className="ac-trade">{a.trade}</div>
               <StarRow rating={a.rating} />
             </div>
-            <span className={`chip ${a.badge === 'Top Rated' ? 'chip-copper' : 'chip-green'}`}>{a.badge}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+              <span className={`chip ${a.badge === 'Top Rated' ? 'chip-copper' : 'chip-green'}`}>{a.badge}</span>
+              {proximityLabel && <span className="chip chip-gray">{proximityLabel}</span>}
+            </div>
           </div>
           <div className="ac-tags">
             {a.skills.slice(0, 3).map(s => <span key={s} className="chip chip-gray">{s}</span>)}
@@ -1936,16 +2042,31 @@
       );
     }
 
+    function rankByLocation(items, viewerLocation, getItemLocation) {
+      const source = Array.isArray(items) ? items : [];
+      return source
+        .map(item => ({
+          ...item,
+          nearbyScore: locationMatchScore(viewerLocation, getItemLocation(item)),
+        }))
+        .sort((left, right) => {
+          if ((right.nearbyScore || 0) !== (left.nearbyScore || 0)) return (right.nearbyScore || 0) - (left.nearbyScore || 0);
+          if ((right.rating || 0) !== (left.rating || 0)) return (right.rating || 0) - (left.rating || 0);
+          return (right.reviewCount || 0) - (left.reviewCount || 0);
+        });
+    }
+
     // ── PAGES ──────────────────────────────────────────────
 
-    function HomePage({ artisans, onArtisan, onJobPost, setPage }) {
+    function HomePage({ artisans, onArtisan, onJobPost, setPage, viewerLocation }) {
       const [search, setSearch] = useState('');
       const [cat, setCat] = useState('all');
 
-      const filtered = (Array.isArray(artisans) ? artisans : []).filter(a =>
-        (cat === 'all' || a?.cat === cat) &&
-        ((a?.name || '').toLowerCase().includes(search.toLowerCase()) || (a?.trade || '').toLowerCase().includes(search.toLowerCase()))
-      );
+      const filtered = rankByLocation(artisans, viewerLocation, (item) => item?.address || item?.location || '')
+        .filter(a =>
+          (cat === 'all' || a?.cat === cat) &&
+          ((a?.name || '').toLowerCase().includes(search.toLowerCase()) || (a?.trade || '').toLowerCase().includes(search.toLowerCase()))
+        );
 
       return (
         <div className="page">
@@ -1963,7 +2084,7 @@
           </div>
 
           {/* Quick Post Job */}
-          <div style={{ background: 'linear-gradient(135deg, var(--copper), var(--copper-light))', borderRadius: 'var(--r-lg)', padding: '18px 20px', marginBottom: 20, color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} onClick={onJobPost}>
+          <div style={{ background: 'var(--copper)', borderRadius: 'var(--r-lg)', padding: '18px 20px', marginBottom: 20, color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} onClick={onJobPost}>
             <div>
               <div style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '1rem', marginBottom: 4 }}>Post a Job</div>
               <div style={{ fontSize: '0.82rem', opacity: 0.85 }}>Get quotes from verified artisans</div>
@@ -2001,14 +2122,19 @@
       );
     }
 
-    function ExplorePage({ artisans, onArtisan }) {
+    function ExplorePage({ artisans, onArtisan, viewerLocation }) {
       const [search, setSearch] = useState('');
       const [cat, setCat] = useState('all');
-      const [sort, setSort] = useState('rating');
+      const [sort, setSort] = useState('nearby');
 
-      const filtered = artisans
+      const filtered = rankByLocation(artisans, viewerLocation, (item) => item?.address || item?.location || '')
         .filter(a => (cat === 'all' || a.cat === cat) && (a.name.toLowerCase().includes(search.toLowerCase()) || a.trade.toLowerCase().includes(search.toLowerCase())))
-        .sort((a, b) => sort === 'rating' ? b.rating - a.rating : sort === 'price' ? a.price - b.price : b.jobs - a.jobs);
+        .sort((a, b) => {
+          if (sort === 'nearby') return (b.nearbyScore || 0) - (a.nearbyScore || 0) || (b.rating || 0) - (a.rating || 0);
+          if (sort === 'price') return (a.price || 0) - (b.price || 0);
+          if (sort === 'jobs') return (b.jobs || 0) - (a.jobs || 0);
+          return (b.rating || 0) - (a.rating || 0);
+        });
 
       return (
         <div className="page">
@@ -2022,7 +2148,7 @@
           </div>
           {/* Sort */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 16, overflowX: 'auto' }}>
-            {[['rating', '⭐', 'Top Rated'], ['price', '💰', 'Lowest Price'], ['jobs', '🔥', 'Most Jobs']].map(([val, icon, lbl]) => (
+            {[['nearby', '📍', 'Nearby'], ['rating', '⭐', 'Top Rated'], ['price', '💰', 'Lowest Price'], ['jobs', '🔥', 'Most Jobs']].map(([val, icon, lbl]) => (
               <button key={val} className={`chip ${sort === val ? 'chip-copper' : 'chip-gray'}`} onClick={() => setSort(val)}><Icon name={icon} /> {lbl}</button>
             ))}
           </div>
@@ -2040,14 +2166,22 @@
       );
     }
 
-    function JobsPage({ jobs, onPayment }) {
+    function JobsPage({ jobs, onPayment, profile, role, onChat }) {
       const [tab, setTab] = useState('active');
-      const active = jobs.filter(j => j.status !== 'completed');
-      const done = jobs.filter(j => j.status === 'completed');
+      const viewerLocation = getProfileLocation(profile);
+      const rankedJobs = rankByLocation(jobs, viewerLocation, (item) => item?.location || '');
+      const scopedJobs = role === 'artisan' && viewerLocation
+        ? rankedJobs.filter(job => (job.nearbyScore || 0) >= 0.35)
+        : rankedJobs;
+      const active = scopedJobs.filter(j => j.status !== 'completed');
+      const done = scopedJobs.filter(j => j.status === 'completed');
       const list = tab === 'active' ? active : done;
 
       const statusColor = { 'in-progress': 'chip-copper', 'pending': 'chip-gold', 'completed': 'chip-green' };
       const statusLabel = { 'in-progress': 'In Progress', 'pending': 'Pending', 'completed': 'Completed' };
+
+      const emptyTitle = role === 'artisan' && viewerLocation ? 'No nearby jobs yet' : 'No jobs yet';
+      const emptyText = role === 'artisan' && viewerLocation ? 'Jobs within your zone will appear here automatically.' : 'Posted jobs will appear here in real time.';
 
       return (
         <div className="page">
@@ -2060,12 +2194,15 @@
             <div className={`tab ${tab === 'completed' ? 'active' : ''}`} onClick={() => setTab('completed')}>Completed ({done.length})</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {list.length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'📋'} /></div><div className="empty-title">No jobs yet</div><div className="empty-text">Posted jobs will appear here in real time.</div></div>}
+            {list.length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'📋'} /></div><div className="empty-title">{emptyTitle}</div><div className="empty-text">{emptyText}</div></div>}
             {list.map(j => (
               <div key={j.id} className="job-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                   <div className="job-title">{j.title}</div>
-                  <span className={`chip ${statusColor[j.status]}`}>{statusLabel[j.status]}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+                    <span className={`chip ${statusColor[j.status]}`}>{statusLabel[j.status]}</span>
+                    {role === 'artisan' && j.nearbyScore ? <span className="chip chip-gray">{getProximityLabel(j.nearbyScore)}</span> : null}
+                  </div>
                 </div>
                 <div className="job-meta">
                   <span><Icon name={'📍'} /> {j.location}</span>
@@ -2081,10 +2218,11 @@
                     </div>
                     <div className="progress-bar"><div className="progress-fill" style={{ width: '65%' }} /></div>
                     <button className="btn btn-copper btn-sm" style={{ marginTop: 12 }} onClick={() => onPayment(j)}><Icon name={'💳'} /> Make Payment</button>
+                    {j.assigned_to && <button className="btn btn-outline btn-sm" style={{ marginTop: 12, marginLeft: 8 }} onClick={() => onChat && onChat(j)}><Icon name={'💬'} /> Chat</button>}
                   </div>
                 )}
                 {j.status === 'pending' && <button className="btn btn-outline btn-sm">View {j.bids} Quotes →</button>}
-                {j.status === 'completed' && <div className="chip chip-green">✓ Payment Released</div>}
+                {j.status === 'completed' && <div className="chip chip-green"><Icon name={'icon-check'} /> Payment Released</div>}
               </div>
             ))}
           </div>
@@ -2097,9 +2235,9 @@
       const isArtisan = role === 'artisan';
       const displayName = profile?.fullName || (isArtisan ? 'Artisan Account' : 'My Account');
       const avatar = profile?.avatar || getInitials(displayName);
-      const artisanSkills = Array.isArray(profile?.skills) && profile.skills.length ? profile.skills : (isArtisan ? (artisans && artisans[0] ? artisans[0].skills : []) : []);
-      const artisanTrade = profile?.trade || (isArtisan ? (artisans && artisans[0] ? artisans[0].trade : 'Trade') : 'Client Account');
-      const artisanBio = profile?.bio || (isArtisan ? (artisans && artisans[0] ? artisans[0].bio : '') : '');
+      const artisanSkills = Array.isArray(profile?.skills) && profile.skills.length ? profile.skills : [];
+      const artisanTrade = profile?.trade || (isArtisan ? '' : 'Client Account');
+      const artisanBio = profile?.bio || '';
       const experienceLabel = profile?.experience || (isArtisan ? '7 years' : '');
       const artisanRecord = isArtisan ? artisans.find((item) => normalizeEmail(item.email) === normalizeEmail(profile?.email)) : null;
       const profileReviews = isArtisan ? reviews.filter((review) => Number(review.artisan_id) === Number(artisanRecord?.id)) : [];
@@ -2120,7 +2258,7 @@
             <div className="profile-name">{displayName}</div>
             <div className="profile-trade">{isArtisan ? artisanTrade : (profile?.businessName || 'Client Account')}</div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' }}>
-              <span className="chip chip-green">✓ Profile Saved</span>
+              <span className="chip chip-green"><Icon name={'icon-check'} /> Profile Saved</span>
               <span className="chip chip-copper">{role === 'artisan' ? <><Icon name={'🔧'} /> Artisan</> : <><Icon name={'👤'} /> Client</>}</span>
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 14 }}>
@@ -2143,7 +2281,7 @@
                   <>
                     <div className="grid-2" style={{ marginBottom: 16 }}>
                       <div className="stat-mini"><div className="stat-mini-val">{profile?.jobsDone || 0}</div><div className="stat-mini-lab">Jobs Done</div></div>
-                      <div className="stat-mini"><div className="stat-mini-val">{profile?.rating || 4.9}★</div><div className="stat-mini-lab">Avg Rating</div></div>
+                      <div className="stat-mini"><div className="stat-mini-val" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>{profile?.rating || 4.9}<Icon name={'icon-star'} style={{ width: 12, height: 12, color: 'var(--gold)' }} /></div><div className="stat-mini-lab">Avg Rating</div></div>
                       <div className="stat-mini"><div className="stat-mini-val">{profile?.completion || '98%'}</div><div className="stat-mini-lab">Completion</div></div>
                       <div className="stat-mini"><div className="stat-mini-val">{experienceLabel || '—'}</div><div className="stat-mini-lab">Experience</div></div>
                     </div>
@@ -2196,12 +2334,12 @@
             {tab === 'portfolio' && isArtisan && (
               <div className="fade-in">
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  {(artisanSkills.length ? artisanSkills : ['Sample Work']).slice(0, 6).map((item, i) => (
-                    <div key={i} style={{ background: `linear-gradient(135deg, ${['#1f5f3a22', '#2563eb22', '#15803d22', '#7c3aed22', '#be185d22', '#0891b222'][i % 6]}, #eee)`, borderRadius: 'var(--r-md)', height: 110, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, border: '1px solid var(--border)' }}>
+                  {artisanSkills.length ? artisanSkills.slice(0, 6).map((item, i) => (
+                    <div key={i} style={{ background: '#f1f5f9', borderRadius: 'var(--r-md)', height: 110, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, border: '1px solid var(--border)' }}>
                       <div style={{ fontSize: '1.5rem' }}><Icon name={'⚡'} /></div>
                       <div style={{ fontSize: '0.75rem', fontWeight: 600, textAlign: 'center', padding: '0 8px' }}>{item}</div>
                     </div>
-                  ))}
+                  )) : <div style={{ color: 'var(--slate-light)', padding: 12 }}>No portfolio items yet.</div>}
                 </div>
               </div>
             )}
@@ -2211,7 +2349,7 @@
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px', background: 'var(--copper-pale)', borderRadius: 'var(--r-md)', marginBottom: 16 }}>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '2.5rem', color: 'var(--copper)' }}>{profileRating || 4.9}</div>
-                    <div style={{ color: 'var(--gold)', fontSize: '1rem' }}>★★★★★</div>
+                    <div style={{ color: 'var(--gold)', fontSize: '1rem' }}><RatingStars rating={5} size={12} /></div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--slate-light)', marginTop: 2 }}>{profile?.reviewCount || profileReviews.length} reviews</div>
                   </div>
                   <div style={{ flex: 1 }}>
@@ -2231,7 +2369,7 @@
                       <div className="review-avatar" style={{ background: '#c8621a' }}>{getInitials(r.text || 'Review')}</div>
                       <div>
                         <div className="review-name">Craft Seal user</div>
-                        <div style={{ color: 'var(--gold)', fontSize: '0.75rem' }}>{'★'.repeat(r.rating)}</div>
+                        <div style={{ color: 'var(--gold)', fontSize: '0.75rem' }}>{stars(r.rating)}</div>
                       </div>
                       <div className="review-date" style={{ marginLeft: 'auto' }}>{r.created_at || 'Just now'}</div>
                     </div>
@@ -2307,6 +2445,94 @@
       );
     }
 
+    function ArtisanProfilePage({ artisan, reviews, onHire, onBack }) {
+      if (!artisan) return (
+        <div className="page">
+          <div className="page-header">
+            <div className="page-title">Artisan profile not found</div>
+          </div>
+          <div style={{ padding: 20 }}>The artisan profile could not be loaded. Please go back and select an artisan from the list.</div>
+          <div style={{ padding: 20 }}><button className="btn btn-outline" onClick={onBack}>Back</button></div>
+        </div>
+      );
+      const profileReviews = Array.isArray(reviews) ? reviews.filter((r) => Number(r.artisan_id) === Number(artisan.id)) : [];
+      return (
+        <div className="page">
+          <div className="page-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 64, height: 64, borderRadius: 40, background: artisan.color || 'var(--copper)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800 }}>{artisan.initials || getInitials(artisan.name)}</div>
+              <div>
+                <div style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '1.25rem' }}>{artisan.name}</div>
+                <div style={{ color: 'var(--slate-light)' }}>{artisan.trade}</div>
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
+            <div className="card card-pad">
+              <div style={{ fontWeight: 700, marginBottom: 8 }}>About</div>
+              <div style={{ color: 'var(--slate-mid)', lineHeight: 1.7 }}>{artisan.bio || 'No bio provided.'}</div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>{(artisan.skills || []).map(s => <span key={s} className="chip chip-gray">{s}</span>)}</div>
+            </div>
+            <div className="card card-pad">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <div style={{ fontWeight: 700 }}>Reviews</div>
+                <div style={{ color: 'var(--slate-light)' }}>{profileReviews.length} reviews</div>
+              </div>
+              {profileReviews.length === 0 && <div style={{ color: 'var(--slate-light)' }}>No reviews yet.</div>}
+              {profileReviews.map(r => (
+                <div key={r.id} style={{ borderTop: '1px solid var(--border)', paddingTop: 10, marginTop: 10 }}>
+                  <div style={{ fontWeight: 700 }}>{getInitials(r.user_id || 'User')}</div>
+                  <div style={{ color: 'var(--slate-light)', marginTop: 6 }}>{r.text}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn btn-copper btn-full" onClick={() => onHire(artisan)}>Hire — From {fmt(artisan.price || 0)}</button>
+              <button className="btn btn-outline" onClick={onBack}>Back</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function ChatModal({ chat, profile, onClose }) {
+      const [messages, setMessages] = useState(chat?.messages || []);
+      const [text, setText] = useState('');
+      useEffect(() => { setMessages(chat?.messages || []); }, [chat]);
+      const send = async () => {
+        if (!text.trim()) return;
+        try {
+          const resp = await apiJson('/api/chats', { method: 'POST', body: JSON.stringify({ chatId: chat.id, job_id: chat.job_id, sender_id: profile?.id || 0, text }) });
+          setMessages((m) => [...m, resp.msg]);
+          setText('');
+        } catch (e) { alert('Could not send message'); }
+      };
+      return (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="modal-sheet" style={{ maxWidth: 430 }}>
+            <div className="modal-handle" />
+            <div style={{ padding: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontWeight: 700 }}>Chat · Job #{chat?.job_id}</div>
+                <button className="btn btn-outline btn-sm" onClick={onClose}>Close</button>
+              </div>
+              <div style={{ maxHeight: '50vh', overflowY: 'auto', marginTop: 12, padding: 8, border: '1px solid var(--border)', borderRadius: 8 }}>
+                {messages.map(m => (
+                  <div key={m.id} style={{ marginBottom: 8, display: 'flex', justifyContent: m.sender_id === profile?.id ? 'flex-end' : 'flex-start' }}>
+                    <div style={{ background: m.sender_id === profile?.id ? 'var(--copper)' : 'var(--paper)', color: m.sender_id === profile?.id ? 'white' : 'inherit', padding: '8px 12px', borderRadius: 10, maxWidth: '80%' }}>{m.text}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <input value={text} onChange={e => setText(e.target.value)} placeholder="Write a message..." style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid var(--border)' }} />
+                <button className="btn btn-copper" onClick={send}>Send</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // ── MODALS ────────────────────────────────────────────
 
     function ArtisanDetailModal({ artisan: a, reviews, onClose, onHire }) {
@@ -2337,7 +2563,7 @@
                   <div style={{ fontSize: '0.9rem', color: 'var(--slate-mid)', lineHeight: 1.7, marginBottom: 16 }}>{a.bio}</div>
                   <div className="grid-2" style={{ marginBottom: 16 }}>
                     <div className="stat-mini"><div className="stat-mini-val">{a.jobs}</div><div className="stat-mini-lab">Jobs Completed</div></div>
-                    <div className="stat-mini"><div className="stat-mini-val">{a.rating}★</div><div className="stat-mini-lab">Average Rating</div></div>
+                    <div className="stat-mini"><div className="stat-mini-val" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>{a.rating}<Icon name={'icon-star'} style={{ width: 12, height: 12, color: 'var(--gold)' }} /></div><div className="stat-mini-lab">Average Rating</div></div>
                   </div>
                   <div style={{ marginBottom: 16 }}>
                     <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 8 }}>Specialties</div>
@@ -2370,13 +2596,15 @@
                   <button className="btn btn-copper btn-full" onClick={() => onHire(a)}>
                     Hire {a.name.split(' ')[0]} — From {fmt(a.price)}
                   </button>
+                  <div style={{ height: 8 }} />
+                  <button className="btn btn-outline btn-full" onClick={() => { onClose(); window.dispatchEvent(new CustomEvent('open-artisan-full', { detail: a })); }} style={{ marginTop: 8 }}>View Full Profile</button>
                 </div>
               )}
               {tab === 'portfolio' && (
                 <div className="fade-in">
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                     {a.skills.map((s, i) => (
-                      <div key={i} style={{ background: `linear-gradient(135deg, ${a.color}22, #eee)`, borderRadius: 'var(--r-md)', height: 110, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                      <div key={i} style={{ background: `${a.color}22`, borderRadius: 'var(--r-md)', height: 110, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                         <div style={{ fontSize: '1.5rem' }}><Icon name={'🔧'} /></div>
                         <div style={{ fontSize: '0.75rem', fontWeight: 600, textAlign: 'center' }}>{s}</div>
                       </div>
@@ -2392,7 +2620,7 @@
                         <div className="review-avatar" style={{ background: '#c8621a' }}>{getInitials(String(r.user_id || 'Review'))}</div>
                         <div>
                           <div className="review-name">Client</div>
-                          <div style={{ color: 'var(--gold)', fontSize: '0.75rem' }}>{'★'.repeat(r.rating)}</div>
+                          <div style={{ color: 'var(--gold)', fontSize: '0.75rem' }}>{stars(r.rating)}</div>
                         </div>
                         <div style={{ marginLeft: 'auto', fontSize: '0.75rem', color: 'var(--slate-light)' }}>{r.created_at || 'Just now'}</div>
                       </div>
@@ -2672,7 +2900,22 @@
       const [onboarded, setOnboarded] = useState(() => Boolean(loadJson(STORAGE_KEYS.profile, null)));
       const [role, setRole] = useState(() => loadJson(STORAGE_KEYS.profile, null)?.role || 'client');
       const [profileSetup, setProfileSetup] = useState(null);
-      const [page, setPage] = useState('home');
+      const [page, setPage] = useState(() => {
+        try {
+          const p = window.location.pathname || '';
+          // support direct file path (/craftseal-app.html) and /app
+          if (p.endsWith('craftseal-app.html') || p === '/craftseal-app' || p === '/app' || p === '/') return 'home';
+          const base = p.replace(/\/$/, '').split('/').filter(Boolean);
+          // find index of 'app' in path
+          const appIndex = base.indexOf('app');
+          if (appIndex >= 0 && base.length > appIndex + 1) {
+            const seg = base[appIndex + 1];
+            if (seg === 'artisan' && base[appIndex + 2]) return 'artisan';
+            return seg;
+          }
+          return 'home';
+        } catch (e) { return 'home'; }
+      });
       const [modal, setModal] = useState(null); // {type, data}
       const [toast, setToast] = useState(null);
 
@@ -2688,6 +2931,42 @@
         if (themeMeta) themeMeta.setAttribute('content', settings.darkMode ? '#0f1720' : '#1f5f3a');
       }, [settings]);
 
+      // History API routing: map /app/<page> and /app/artisan/<id>
+      useEffect(() => {
+        const onPop = () => {
+          try {
+            const p = window.location.pathname || '';
+            const base = p.replace(/\/$/, '').split('/').filter(Boolean);
+            const appIndex = base.indexOf('app');
+            if (appIndex >= 0 && base.length > appIndex + 1) {
+              const seg = base[appIndex + 1];
+              if (seg === 'artisan' && base[appIndex + 2]) {
+                const id = Number(base[appIndex + 2]);
+                const found = artisans.find(a => Number(a.id) === id);
+                if (found) { setCurrentArtisan(found); setPage('artisan'); return; }
+              } else {
+                setPage(seg);
+                return;
+              }
+            }
+            setPage('home');
+          } catch (e) { setPage('home'); }
+        };
+        window.addEventListener('popstate', onPop);
+        return () => window.removeEventListener('popstate', onPop);
+      }, [artisans]);
+
+      useEffect(() => {
+        const buildPath = () => {
+          if (page === 'artisan' && currentArtisan) return `/app/artisan/${currentArtisan.id}`;
+          return page === 'home' ? '/app' : `/app/${page}`;
+        };
+        const newPath = buildPath();
+        if (window.location.pathname !== newPath) {
+          try { history.pushState(null, '', newPath); } catch (e) { /* ignore */ }
+        }
+      }, [page, currentArtisan]);
+
       useEffect(() => {
         if (storedProfile) {
           localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(storedProfile));
@@ -2697,6 +2976,7 @@
       }, [storedProfile]);
 
       const [artisans, setArtisans] = useState([]);
+      const [chats, setChats] = useState([]);
       const [jobs, setJobs] = useState([]);
       const [notifs, setNotifs] = useState([]);
       const [reviews, setReviews] = useState([]);
@@ -2711,6 +2991,7 @@
             setJobs(Array.isArray(state.jobs) ? state.jobs : []);
             setNotifs(Array.isArray(state.notifications) ? state.notifications : []);
             setReviews(Array.isArray(state.reviews) ? state.reviews : []);
+            setChats(Array.isArray(state.chats) ? state.chats : []);
           } catch (e) {
             if (!alive) return;
             setArtisans([]);
@@ -2754,11 +3035,19 @@
               setJobs(Array.isArray(message.state.jobs) ? message.state.jobs : []);
               setNotifs(Array.isArray(message.state.notifications) ? message.state.notifications : []);
               setReviews(Array.isArray(message.state.reviews) ? message.state.reviews : []);
+              setChats(Array.isArray(message.state.chats) ? message.state.chats : []);
             }
           } catch (error) { }
         };
         source.onerror = () => { };
         return () => source.close();
+      }, []);
+
+      // listen for external requests to open full artisan page
+      useEffect(() => {
+        const handler = (e) => { if (e && e.detail) { setCurrentArtisan(e.detail); setPage('artisan'); } };
+        window.addEventListener('open-artisan-full', handler);
+        return () => window.removeEventListener('open-artisan-full', handler);
       }, []);
 
       const handleOnboard = (r) => {
@@ -2825,69 +3114,117 @@
         showToast('Session cleared. Create a new profile to continue.', 'default');
       };
 
-      const openArtisan = (a) => setModal({ type: 'artisan', data: a });
+      const [currentArtisan, setCurrentArtisan] = useState(null);
+      const openArtisan = (a) => {
+        setCurrentArtisan(a || null);
+        setModal({ type: 'artisan', data: a });
+      };
       const openJobPost = () => setModal({ type: 'jobPost' });
       const openPayment = (data) => setModal({ type: 'payment', data });
 
       const enablePasskeySetup = async () => {
-        if (!supportsPasskeys()) {
-          showToast('This device does not support biometric login.', 'error');
-          return;
-        }
-        if (!storedProfile?.email) {
-          showToast('Create a profile first before enabling biometric login.', 'error');
-          return;
-        }
-        const optionsResponse = await apiJson('/api/auth/webauthn/register/options', {
-          method: 'POST',
-          body: JSON.stringify({ email: storedProfile.email }),
-        });
-        const credential = await navigator.credentials.create({ publicKey: toWebAuthnCreationOptions(optionsResponse.options) });
-        const verification = await apiJson('/api/auth/webauthn/register/verify', {
-          method: 'POST',
-          body: JSON.stringify({ response: credentialToJSON(credential), transports: credential.response?.getTransports ? credential.response.getTransports() : ['internal'] }),
-        });
-        if (verification?.verified) {
-          setSettings((current) => ({ ...current, biometricLogin: true }));
-          showToast('Biometric login enabled.', 'success');
+        try {
+          if (!supportsPasskeys()) {
+            showToast('This device does not support biometric login.', 'error');
+            return;
+          }
+          if (!storedProfile?.email) {
+            showToast('Create a profile first before enabling biometric login.', 'error');
+            return;
+          }
+          if (typeof window.PublicKeyCredential?.isUserVerifyingPlatformAuthenticatorAvailable === 'function') {
+            const avail = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+            if (!avail) {
+              showToast('Platform authenticator (Windows Hello) not available or not configured.', 'error');
+              return;
+            }
+          }
+          const optionsResponse = await apiJson('/api/auth/webauthn/register/options', {
+            method: 'POST',
+            body: JSON.stringify({ email: storedProfile.email }),
+          });
+          const credential = await navigator.credentials.create({ publicKey: toWebAuthnCreationOptions(optionsResponse.options) });
+          if (!credential) throw new Error('No credential created');
+          const verification = await apiJson('/api/auth/webauthn/register/verify', {
+            method: 'POST',
+            body: JSON.stringify({ response: credentialToJSON(credential), transports: credential.response?.getTransports ? credential.response.getTransports() : ['internal'] }),
+          });
+          if (verification?.verified) {
+            setSettings((current) => ({ ...current, biometricLogin: true }));
+            showToast('Biometric login enabled.', 'success');
+          } else {
+            showToast('Could not verify passkey registration.', 'error');
+          }
+        } catch (err) {
+          console.error('Passkey registration error:', err);
+          showToast('Passkey setup failed — ensure Windows Hello is enabled and you are using a compatible browser (Chrome/Edge on localhost/HTTPS). ' + (err?.message || ''));
         }
       };
 
       const signInWithPasskey = async () => {
-        if (!supportsPasskeys()) {
-          showToast('This device does not support biometric login.', 'error');
-          return;
-        }
-        const email = storedProfile?.email || loadJson(STORAGE_KEYS.lastEmail, '');
-        if (!email) {
-          showToast('No saved account found for passkey login.', 'error');
-          return;
-        }
-        const optionsResponse = await apiJson('/api/auth/webauthn/login/options', {
-          method: 'POST',
-          body: JSON.stringify({ email }),
-        });
-        const assertion = await navigator.credentials.get({ publicKey: toWebAuthnRequestOptions(optionsResponse.options) });
-        const verification = await apiJson('/api/auth/webauthn/login/verify', {
-          method: 'POST',
-          body: JSON.stringify({
-            userId: optionsResponse.user.id,
-            credentialID: assertion.id,
-            response: credentialToJSON(assertion),
-          }),
-        });
-        if (verification?.user) {
-          setStoredProfile({ ...storedProfile, ...verification.user });
-          localStorage.setItem(STORAGE_KEYS.lastEmail, verification.user.email || email);
-          setOnboarded(true);
-          setRole(verification.user.role || storedProfile.role);
-          setPage('home');
-          showToast('Biometric login successful.', 'success');
+        try {
+          if (!supportsPasskeys()) {
+            showToast('This device does not support biometric login.', 'error');
+            return;
+          }
+          if (typeof window.PublicKeyCredential?.isUserVerifyingPlatformAuthenticatorAvailable === 'function') {
+            const avail = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+            if (!avail) {
+              showToast('Platform authenticator not available — enable Windows Hello or use a compatible device.', 'error');
+              return;
+            }
+          }
+          const email = storedProfile?.email || loadJson(STORAGE_KEYS.lastEmail, '');
+          if (!email) {
+            showToast('No saved account found for passkey login.', 'error');
+            return;
+          }
+          const optionsResponse = await apiJson('/api/auth/webauthn/login/options', {
+            method: 'POST',
+            body: JSON.stringify({ email }),
+          });
+          const assertion = await navigator.credentials.get({ publicKey: toWebAuthnRequestOptions(optionsResponse.options) });
+          if (!assertion) throw new Error('No assertion returned');
+          const verification = await apiJson('/api/auth/webauthn/login/verify', {
+            method: 'POST',
+            body: JSON.stringify({
+              userId: optionsResponse.user.id,
+              credentialID: assertion.id,
+              response: credentialToJSON(assertion),
+            }),
+          });
+          if (verification?.user) {
+            setStoredProfile({ ...storedProfile, ...verification.user });
+            localStorage.setItem(STORAGE_KEYS.lastEmail, verification.user.email || email);
+            setOnboarded(true);
+            setRole(verification.user.role || storedProfile.role);
+            setPage('home');
+            showToast('Biometric login successful.', 'success');
+          } else {
+            showToast('Passkey login verification failed.', 'error');
+          }
+        } catch (err) {
+          console.error('Passkey sign-in error:', err);
+          showToast('Passkey sign-in failed — ensure Windows Hello is set up and the site is loaded from localhost or HTTPS. ' + (err?.message || ''));
         }
       };
 
       const handleHire = (artisan) => {
         setModal({ type: 'payment', data: { artisan } });
+      };
+
+      const openChatForJob = async (job) => {
+        // find existing chat for job
+        try {
+          const resp = await apiJson(`/api/chats?job_id=${job.id}`);
+          let chat = resp && resp.chats && resp.chats[0];
+          if (!chat) {
+            // create initial chat message opener
+            const init = await apiJson('/api/chats', { method: 'POST', body: JSON.stringify({ job_id: job.id, user_id: storedProfile?.id || 0, artisan_id: job.assigned_to || job.artisan_id || 0, sender_id: storedProfile?.id || 0, text: 'Chat opened' }) });
+            chat = init.chat;
+          }
+          setModal({ type: 'chat', data: chat });
+        } catch (e) { showToast('Could not open chat right now.', 'error'); }
       };
 
       const handleJobPost = async (jobData) => {
@@ -2947,18 +3284,19 @@
 
       const renderPage = () => {
         switch (page) {
-          case 'home': return <HomePage artisans={artisans} onArtisan={openArtisan} onJobPost={openJobPost} setPage={setPage} />;
-          case 'explore': return <ExplorePage artisans={artisans} onArtisan={openArtisan} />;
-          case 'jobs': return <JobsPage jobs={jobs} onPayment={(j) => openPayment({ job: j })} />;
+          case 'home': return <HomePage artisans={artisans} onArtisan={openArtisan} onJobPost={openJobPost} setPage={setPage} viewerLocation={getProfileLocation(storedProfile)} />;
+          case 'explore': return <ExplorePage artisans={artisans} onArtisan={openArtisan} viewerLocation={getProfileLocation(storedProfile)} />;
+          case 'jobs': return <JobsPage jobs={jobs} profile={storedProfile} role={role} onPayment={(j) => openPayment({ job: j })} onChat={openChatForJob} />;
           case 'notifications': return <NotificationsPage notifs={notifs} onMarkRead={markNotificationRead} />;
           case 'profile': return <ProfilePage artisans={artisans} reviews={reviews} role={role} profile={storedProfile} settings={settings} onToggleSetting={handleToggleSetting} onLogout={handleLogout} onEditProfile={handleEditProfile} onEnableBiometricLogin={enablePasskeySetup} onSignInWithPasskey={signInWithPasskey} biometricSupported={supportsPasskeys()} />;
-          default: return <HomePage artisans={artisans} onArtisan={openArtisan} onJobPost={openJobPost} setPage={setPage} />;
+          case 'artisan': return <ArtisanProfilePage artisan={currentArtisan} reviews={reviews} onHire={handleHire} onBack={() => setPage('explore')} />;
+          default: return <HomePage artisans={artisans} onArtisan={openArtisan} onJobPost={openJobPost} setPage={setPage} viewerLocation={getProfileLocation(storedProfile)} />;
         }
       };
 
       return (
         <div className="app-shell">
-          {/* Top Nav */}
+          
           <nav className="top-nav">
             <div className="nav-logo-app">
               <div className="logo-circle">CS</div>
@@ -2977,7 +3315,7 @@
             <button className="nav-icon-btn" onClick={() => setPage('profile')}><Icon name={'👤'} /></button>
           </nav>
 
-          {/* Sidebar (desktop) */}
+          
           <aside className="sidebar">
             {NAV.map(([id, icon, label]) => (
               <div key={id} className={`sidebar-item ${page === id ? 'active' : ''}`} onClick={() => setPage(id)}>
@@ -2995,10 +3333,10 @@
             </div>
           </aside>
 
-          {/* Main */}
+          
           <main className="main-content">{renderPage()}</main>
 
-          {/* Bottom Nav */}
+          
           <nav className="bottom-nav">
             {NAV.map(([id, icon, label]) => (
               <div key={id} className={`bottom-nav-item ${page === id ? 'active' : ''}`} onClick={() => setPage(id)}>
@@ -3008,7 +3346,7 @@
             ))}
           </nav>
 
-          {/* Modals */}
+          
           {modal?.type === 'artisan' && <ArtisanDetailModal artisan={modal.data} reviews={reviews} onClose={() => setModal(null)} onHire={handleHire} />}
           {modal?.type === 'jobPost' && <PostJobModal onClose={() => setModal(null)} onSubmit={handleJobPost} />}
           {modal?.type === 'payment' && <PaymentModal {...modal.data} onClose={() => setModal(null)} showToast={showToast} onPaid={async (n) => {
@@ -3024,8 +3362,9 @@
               else if (Notification.permission !== 'denied') Notification.requestPermission().then(p => { if (p === 'granted') try { new Notification(n.text); } catch (e) { } });
             }
           }} />}
+          {modal?.type === 'chat' && <ChatModal chat={modal.data} profile={storedProfile} onClose={() => setModal(null)} />}
 
-          {/* Toast */}
+          
           {toast && <Toast message={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
         </div>
       );
@@ -3033,7 +3372,7 @@
 
     const rootEl = document.getElementById('root');
     if (!window.React || !window.ReactDOM || !window.Babel) {
-      rootEl.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#07101f;color:#e5e7eb;font-family:DM Sans,sans-serif;text-align:center;"><div>⚠️ Failed to load required libraries.<br/><br/>Please check your internet connection and reload the page (Ctrl+R or Cmd+R).</div></div>';
+      rootEl.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#07101f;color:#e5e7eb;font-family:DM Sans,sans-serif;text-align:center;"><div><span style="display:inline-flex;width:2rem;height:2rem;margin-bottom:14px;color:#94a3b8;"><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16"></path><path d="M12 4v16"></path></svg></span><br/>Failed to load required libraries.<br/><br/>Please check your internet connection and reload the page (Ctrl+R or Cmd+R).</div></div>';
     } else {
       ReactDOM.render(<App />, rootEl);
     }
