@@ -1571,6 +1571,20 @@
       <path d="M7 4h10v16H7V4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
       <path d="M9 8h6M9 12h3M9 16h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
     </symbol>
+    <symbol id="icon-home" viewBox="0 0 24 24">
+      <path d="M12 3l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10l9-7z" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-bell" viewBox="0 0 24 24">
+      <path d="M15 17H9a4 4 0 0 1-4-4V10a6 6 0 1 1 12 0v3a4 4 0 0 1-4 4z" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linejoin="round"></path>
+      <path d="M13.7 20a2 2 0 0 1-3.4 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      </path>
+    </symbol>
+    <symbol id="icon-user" viewBox="0 0 24 24">
+      <circle cx="12" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+      <path d="M4 20a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+    </symbol>
   </svg>
 
   <div id="root"></div>
@@ -1580,18 +1594,18 @@
 
     // ── DATA ──────────────────────────────────────────────
     const CATEGORIES = [
-      { id: 'all', icon: '🔧', label: 'All' },
-      { id: 'electrical', icon: '⚡', label: 'Electrical' },
-      { id: 'plumbing', icon: '🚿', label: 'Plumbing' },
-      { id: 'carpentry', icon: '🪚', label: 'Carpentry' },
-      { id: 'painting', icon: '🎨', label: 'Painting' },
-      { id: 'tiling', icon: '🏗️', label: 'Tiling' },
-      { id: 'mechanical', icon: '🔩', label: 'Mechanic' },
-      { id: 'ac', icon: '❄️', label: 'AC Repair' },
-      { id: 'masonry', icon: '🧱', label: 'Masonry' },
-      { id: 'welding', icon: '🔥', label: 'Welding' },
-      { id: 'roofing', icon: '🏠', label: 'Roofing' },
-      { id: 'generator', icon: '🔌', label: 'Generator' },
+      { id: 'all', icon: 'icon-search', label: 'All' },
+      { id: 'electrical', icon: 'icon-rocket', label: 'Electrical' },
+      { id: 'plumbing', icon: 'icon-store', label: 'Plumbing' },
+      { id: 'carpentry', icon: 'icon-shield', label: 'Carpentry' },
+      { id: 'painting', icon: 'icon-rocket', label: 'Painting' },
+      { id: 'tiling', icon: 'icon-store', label: 'Tiling' },
+      { id: 'mechanical', icon: 'icon-shield', label: 'Mechanic' },
+      { id: 'ac', icon: 'icon-signal', label: 'AC Repair' },
+      { id: 'masonry', icon: 'icon-store', label: 'Masonry' },
+      { id: 'welding', icon: 'icon-rocket', label: 'Welding' },
+      { id: 'roofing', icon: 'icon-store', label: 'Roofing' },
+      { id: 'generator', icon: 'icon-rocket', label: 'Generator' },
     ];
 
     // persistence helpers
@@ -1818,7 +1832,7 @@
 
     function Icon({ name, className = '', style = {} }) {
       const map = {
-        '🔍': 'icon-search', '⚡': 'icon-rocket', '✅': 'icon-check', '💬': 'icon-chat', '🔒': 'icon-lock', '⭐': 'icon-star', '📋': 'icon-store', '💳': 'icon-wallet', '📍': 'icon-search', '🔧': 'icon-shield', '📲': 'icon-phone', '📟': 'icon-ussd', '🏪': 'icon-store', '🔔': 'icon-chat', '👤': 'icon-shield'
+        '🔍': 'icon-search', '⚡': 'icon-rocket', '✅': 'icon-check', '💬': 'icon-chat', '🔒': 'icon-lock', '⭐': 'icon-star', '📋': 'icon-store', '💳': 'icon-wallet', '📍': 'icon-search', '🔧': 'icon-shield', '📲': 'icon-phone', '📟': 'icon-ussd', '🏪': 'icon-store', '🔔': 'icon-bell', '👤': 'icon-user', '🏠': 'icon-home'
       };
       // If caller passed a literal symbol id like 'icon-check', render that SVG
       if (typeof name === 'string' && name.startsWith('icon-')) {
@@ -1911,7 +1925,7 @@
           <div className="setup-panel fade-in">
             <div className="setup-hero">
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
-                <span className="setup-badge">{role === 'artisan' ? <><Icon name={'🔧'} /> Artisan profile</> : <><Icon name={'👤'} /> Client profile</>}</span>
+                <span className="setup-badge">{role === 'artisan' ? <><Icon name={'icon-shield'} /> Artisan profile</> : <><Icon name={'icon-user'} /> Client profile</>}</span>
                 <button className="btn btn-outline btn-sm" onClick={onBack} style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'white' }}>← Back</button>
               </div>
               <div className="setup-title">Create your profile</div>
@@ -2035,7 +2049,7 @@
             {a.skills.slice(0, 3).map(s => <span key={s} className="chip chip-gray">{s}</span>)}
           </div>
           <div className="ac-footer">
-            <span className="ac-location"><Icon name={'📍'} /> {a.location}</span>
+            <span className="ac-location"><Icon name={'icon-search'} /> {a.location}</span>
             <span className="ac-price">From {fmt(a.price)}</span>
           </div>
         </div>
@@ -2078,7 +2092,7 @@
 
           {/* Search */}
           <div className="search-bar" style={{ marginBottom: 20 }}>
-            <Icon name={'🔍'} />
+            <Icon name={'icon-search'} />
             <input placeholder="Search plumber, electrician..." value={search} onChange={e => setSearch(e.target.value)} />
             {search && <span onClick={() => setSearch('')} style={{ cursor: 'pointer', color: 'var(--slate-light)' }}>✕</span>}
           </div>
@@ -2089,7 +2103,7 @@
               <div style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '1rem', marginBottom: 4 }}>Post a Job</div>
               <div style={{ fontSize: '0.82rem', opacity: 0.85 }}>Get quotes from verified artisans</div>
             </div>
-            <div style={{ fontSize: '2rem' }}><Icon name={'📋'} /></div>
+            <div style={{ fontSize: '2rem' }}><Icon name={'icon-store'} /></div>
           </div>
 
           {/* Categories */}
@@ -2114,7 +2128,7 @@
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {filtered.slice(0, 3).map(a => <ArtisanCard key={a.id} a={a} onTap={onArtisan} />)}
               {filtered.length === 0 && (
-                <div className="empty-state"><div className="empty-icon"><Icon name={'🔍'} /></div><div className="empty-title">No verified artisans yet</div><div className="empty-text">Artisans appear here after they create real profiles in the app.</div></div>
+                <div className="empty-state"><div className="empty-icon"><Icon name={'icon-search'} /></div><div className="empty-title">No verified artisans yet</div><div className="empty-text">Artisans appear here after they create real profiles in the app.</div></div>
               )}
             </div>
           </div>
@@ -2128,7 +2142,12 @@
       const [sort, setSort] = useState('nearby');
 
       const filtered = rankByLocation(artisans, viewerLocation, (item) => item?.address || item?.location || '')
-        .filter(a => (cat === 'all' || a.cat === cat) && (a.name.toLowerCase().includes(search.toLowerCase()) || a.trade.toLowerCase().includes(search.toLowerCase())))
+        .filter(a => {
+          const name = (a && a.name) ? String(a.name) : '';
+          const trade = (a && a.trade) ? String(a.trade) : '';
+          const catMatch = (cat === 'all' || (a && a.cat) === cat);
+          return catMatch && (name.toLowerCase().includes(search.toLowerCase()) || trade.toLowerCase().includes(search.toLowerCase()));
+        })
         .sort((a, b) => {
           if (sort === 'nearby') return (b.nearbyScore || 0) - (a.nearbyScore || 0) || (b.rating || 0) - (a.rating || 0);
           if (sort === 'price') return (a.price || 0) - (b.price || 0);
@@ -2143,12 +2162,12 @@
             <div className="page-subtitle">All verified professionals</div>
           </div>
           <div className="search-bar" style={{ marginBottom: 14 }}>
-            <Icon name={'🔍'} />
+            <Icon name={'icon-search'} />
             <input placeholder="Search any trade..." value={search} onChange={e => setSearch(e.target.value)} />
           </div>
           {/* Sort */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 16, overflowX: 'auto' }}>
-            {[['nearby', '📍', 'Nearby'], ['rating', '⭐', 'Top Rated'], ['price', '💰', 'Lowest Price'], ['jobs', '🔥', 'Most Jobs']].map(([val, icon, lbl]) => (
+            {[['nearby', 'icon-search', 'Nearby'], ['rating', 'icon-star', 'Top Rated'], ['price', 'icon-wallet', 'Lowest Price'], ['jobs', 'icon-rocket', 'Most Jobs']].map(([val, icon, lbl]) => (
               <button key={val} className={`chip ${sort === val ? 'chip-copper' : 'chip-gray'}`} onClick={() => setSort(val)}><Icon name={icon} /> {lbl}</button>
             ))}
           </div>
@@ -2160,13 +2179,13 @@
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {filtered.map(a => <ArtisanCard key={a.id} a={a} onTap={onArtisan} />)}
-            {filtered.length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'😕'} /></div><div className="empty-title">No artisans found</div><div className="empty-text">Create artisan profiles in the app to populate this list.</div></div>}
+            {filtered.length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'icon-search'} /></div><div className="empty-title">No artisans found</div><div className="empty-text">Create artisan profiles in the app to populate this list.</div></div>}
           </div>
         </div>
       );
     }
 
-    function JobsPage({ jobs, onPayment, profile, role, onChat }) {
+    function JobsPage({ jobs, onPayment, profile, role, onChat, onOpenJob }) {
       const [tab, setTab] = useState('active');
       const viewerLocation = getProfileLocation(profile);
       const rankedJobs = rankByLocation(jobs, viewerLocation, (item) => item?.location || '');
@@ -2194,9 +2213,9 @@
             <div className={`tab ${tab === 'completed' ? 'active' : ''}`} onClick={() => setTab('completed')}>Completed ({done.length})</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {list.length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'📋'} /></div><div className="empty-title">{emptyTitle}</div><div className="empty-text">{emptyText}</div></div>}
+            {list.length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'icon-store'} /></div><div className="empty-title">{emptyTitle}</div><div className="empty-text">{emptyText}</div></div>}
             {list.map(j => (
-              <div key={j.id} className="job-card">
+              <div key={j.id} className="job-card" onClick={() => onOpenJob && onOpenJob(j)} style={{ cursor: 'pointer' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                   <div className="job-title">{j.title}</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
@@ -2205,10 +2224,10 @@
                   </div>
                 </div>
                 <div className="job-meta">
-                  <span><Icon name={'📍'} /> {j.location}</span>
-                  <span><Icon name={'💳'} /> {j.budget}</span>
-                  <span><Icon name={'🕐'} /> {j.date}</span>
-                  {j.bids > 0 && <span style={{ color: 'var(--copper)', fontWeight: 600 }}><Icon name={'💬'} /> {j.bids} quotes</span>}
+                  <span><Icon name={'icon-search'} /> {j.location}</span>
+                  <span><Icon name={'icon-wallet'} /> {j.budget}</span>
+                  <span><Icon name={'icon-signal'} /> {j.date}</span>
+                  {j.bids > 0 && <span style={{ color: 'var(--copper)', fontWeight: 600 }}><Icon name={'icon-chat'} /> {j.bids} quotes</span>}
                 </div>
                 <div style={{ fontSize: '0.82rem', color: 'var(--slate-light)', marginBottom: 12, lineHeight: 1.6 }}>{j.desc}</div>
                 {j.status === 'in-progress' && (
@@ -2217,11 +2236,11 @@
                       <span>Job progress</span><span>65%</span>
                     </div>
                     <div className="progress-bar"><div className="progress-fill" style={{ width: '65%' }} /></div>
-                    <button className="btn btn-copper btn-sm" style={{ marginTop: 12 }} onClick={() => onPayment(j)}><Icon name={'💳'} /> Make Payment</button>
-                    {j.assigned_to && <button className="btn btn-outline btn-sm" style={{ marginTop: 12, marginLeft: 8 }} onClick={() => onChat && onChat(j)}><Icon name={'💬'} /> Chat</button>}
+                    <button className="btn btn-copper btn-sm" style={{ marginTop: 12 }} onClick={(e) => { e.stopPropagation(); onPayment && onPayment(j); }}><Icon name={'icon-wallet'} /> Make Payment</button>
+                    {j.assigned_to && <button className="btn btn-outline btn-sm" style={{ marginTop: 12, marginLeft: 8 }} onClick={(e) => { e.stopPropagation(); onChat && onChat(j); }}><Icon name={'icon-chat'} /> Chat</button>}
                   </div>
                 )}
-                {j.status === 'pending' && <button className="btn btn-outline btn-sm">View {j.bids} Quotes →</button>}
+                {j.status === 'pending' && <button className="btn btn-outline btn-sm" onClick={(e) => { e.stopPropagation(); /* view quotes - no-op for now */ }}>{`View ${j.bids} Quotes →`}</button>}
                 {j.status === 'completed' && <div className="chip chip-green"><Icon name={'icon-check'} /> Payment Released</div>}
               </div>
             ))}
@@ -2259,7 +2278,7 @@
             <div className="profile-trade">{isArtisan ? artisanTrade : (profile?.businessName || 'Client Account')}</div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' }}>
               <span className="chip chip-green"><Icon name={'icon-check'} /> Profile Saved</span>
-              <span className="chip chip-copper">{role === 'artisan' ? <><Icon name={'🔧'} /> Artisan</> : <><Icon name={'👤'} /> Client</>}</span>
+              <span className="chip chip-copper">{role === 'artisan' ? <><Icon name={'icon-shield'} /> Artisan</> : <><Icon name={'icon-user'} /> Client</>}</span>
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 14 }}>
               <button className="btn btn-outline btn-sm" style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'white' }} onClick={onEditProfile}>Edit Profile</button>
@@ -2336,7 +2355,7 @@
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   {artisanSkills.length ? artisanSkills.slice(0, 6).map((item, i) => (
                     <div key={i} style={{ background: '#f1f5f9', borderRadius: 'var(--r-md)', height: 110, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, border: '1px solid var(--border)' }}>
-                      <div style={{ fontSize: '1.5rem' }}><Icon name={'⚡'} /></div>
+                      <div style={{ fontSize: '1.5rem' }}><Icon name={'icon-rocket'} /></div>
                       <div style={{ fontSize: '0.75rem', fontWeight: 600, textAlign: 'center', padding: '0 8px' }}>{item}</div>
                     </div>
                   )) : <div style={{ color: 'var(--slate-light)', padding: 12 }}>No portfolio items yet.</div>}
@@ -2376,7 +2395,7 @@
                     <div className="review-text">{r.text}</div>
                   </div>
                 ))}
-                {profileReviews.length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'⭐'} /></div><div className="empty-title">No reviews yet</div><div className="empty-text">Reviews will appear here once real jobs are completed.</div></div>}
+                {profileReviews.length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'icon-star'} /></div><div className="empty-title">No reviews yet</div><div className="empty-text">Reviews will appear here once real jobs are completed.</div></div>}
               </div>
             )}
 
@@ -2401,15 +2420,15 @@
                   </div>
                   <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                     <button className="btn btn-copper btn-sm" onClick={onEnableBiometricLogin} disabled={!biometricSupported}>
-                      <Icon name={'🔒'} /> Enable on this device
+                      <Icon name={'icon-lock'} /> Enable on this device
                     </button>
                     <button className="btn btn-outline btn-sm" onClick={onSignInWithPasskey} disabled={!biometricSupported}>
-                      <Icon name={'🔐'} /> Sign in with passkey
+                      <Icon name={'icon-lock'} /> Sign in with passkey
                     </button>
                   </div>
                 </div>
                 <button className="btn btn-outline btn-full" style={{ marginBottom: 10, color: 'var(--red)', borderColor: 'var(--red-pale)' }} onClick={onLogout}>
-                  <Icon name={'🚪'} /> Log Out
+                  <Icon name={'icon-user'} /> Log Out
                 </button>
                 <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--slate-light)', marginTop: 16 }}>
                   Craft Seal Platform · Powered by KoraPay
@@ -2429,7 +2448,7 @@
             <div className="page-subtitle">{notifs.filter(n => n.unread).length} unread</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {notifs.length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'🔔'} /></div><div className="empty-title">No notifications yet</div><div className="empty-text">Job updates and payment alerts will appear here.</div></div>}
+            {notifs.length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'icon-bell'} /></div><div className="empty-title">No notifications yet</div><div className="empty-text">Job updates and payment alerts will appear here.</div></div>}
             {notifs.map(n => (
               <div key={n.id} onClick={() => onMarkRead && onMarkRead(n.id)} style={{ cursor: onMarkRead ? 'pointer' : 'default', background: n.unread ? 'var(--copper-pale)' : 'var(--white)', border: `1px solid ${n.unread ? 'rgba(200,98,26,0.2)' : 'var(--border)'}`, borderRadius: 'var(--r-md)', padding: '14px 16px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                 <span style={{ fontSize: '1.3rem' }}><Icon name={n.icon} /></span>
@@ -2533,6 +2552,70 @@
       );
     }
 
+    function JobDetailModal({ job, artisans = [], onClose, onViewArtisan, onViewProfile, profile }) {
+      const assignedId = job?.assigned_to || job?.artisan_id || null;
+      const assigned = artisans.find(a => Number(a.id) === Number(assignedId));
+      return (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="modal-sheet">
+            <div className="modal-handle" />
+            <div style={{ padding: '0 20px 12px' }}>
+              <div style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '1.15rem', marginBottom: 6 }}>{job?.title || 'Job details'}</div>
+              <div style={{ color: 'var(--slate-light)', marginBottom: 8 }}>{job?.location} · {job?.date}</div>
+            </div>
+            <div className="modal-body">
+              <div style={{ marginBottom: 12, fontSize: '0.95rem', color: 'var(--slate-mid)' }}>{job?.desc || 'No description provided.'}</div>
+              <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                <div className="card card-pad" style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, marginBottom: 8 }}>Budget</div>
+                  <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--copper)' }}>{job?.budget || 'Not specified'}</div>
+                </div>
+                <div className="card card-pad" style={{ width: 140 }}>
+                  <div style={{ fontWeight: 700, marginBottom: 8 }}>Status</div>
+                  <div className="chip chip-gray">{job?.status || 'open'}</div>
+                </div>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontWeight: 700, marginBottom: 8 }}>Bids</div>
+                {Array.isArray(job?.bidsList) && job.bidsList.length ? (
+                  job.bidsList.map(b => (
+                    <div key={b.id} style={{ padding: 8, borderBottom: '1px solid var(--border)' }}>
+                      <div style={{ fontWeight: 700 }}>{b.artisanName || `Artisan #${b.artisan_id}`}</div>
+                      <div style={{ color: 'var(--slate-light)' }}>{b.message}</div>
+                      <div style={{ marginTop: 6, fontWeight: 700 }}>{b.amount ? `₦${Number(b.amount).toLocaleString()}` : ''}</div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ color: 'var(--slate-light)' }}>No bids visible for this job.</div>
+                )}
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <div style={{ fontWeight: 700, marginBottom: 8 }}>Assigned Artisan</div>
+                {assigned ? (
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <div style={{ width: 56, height: 56, borderRadius: 40, background: assigned.color || 'var(--copper)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800 }}>{assigned.initials || getInitials(assigned.name)}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 800 }}>{assigned.name || assigned.fullName || 'Artisan'}</div>
+                      <div style={{ color: 'var(--slate-light)' }}>{assigned.trade}</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button className="btn btn-copper btn-sm" onClick={(e) => { e.stopPropagation(); onViewArtisan && onViewArtisan(assigned); }}>View Artisan</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ color: 'var(--slate-light)' }}>No artisan has been assigned yet.</div>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
+                <button className="btn btn-outline" onClick={(e) => { e.stopPropagation(); onClose(); }}>{'Close'}</button>
+                <button className="btn btn-copper" onClick={(e) => { e.stopPropagation(); onViewProfile && onViewProfile(); }}>{'View My Profile'}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // ── MODALS ────────────────────────────────────────────
 
     function ArtisanDetailModal({ artisan: a, reviews, onClose, onHire }) {
@@ -2574,7 +2657,7 @@
                   <div style={{ marginBottom: 16 }}>
                     <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 8 }}>Location</div>
                     <div className="map-placeholder">
-                      <div className="map-pin"><Icon name={'📍'} /></div>
+                      <div className="map-pin"><Icon name={'icon-search'} /></div>
                       <span style={{ color: 'var(--slate-mid)', fontSize: '0.85rem' }}>{a.location}</span>
                     </div>
                   </div>
@@ -2605,7 +2688,7 @@
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                     {a.skills.map((s, i) => (
                       <div key={i} style={{ background: `${a.color}22`, borderRadius: 'var(--r-md)', height: 110, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                        <div style={{ fontSize: '1.5rem' }}><Icon name={'🔧'} /></div>
+                        <div style={{ fontSize: '1.5rem' }}><Icon name={'icon-shield'} /></div>
                         <div style={{ fontSize: '0.75rem', fontWeight: 600, textAlign: 'center' }}>{s}</div>
                       </div>
                     ))}
@@ -2627,7 +2710,7 @@
                       <div className="review-text">{r.text}</div>
                     </div>
                   ))}
-                  {reviews.filter((review) => Number(review.artisan_id) === Number(a.id)).length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'⭐'} /></div><div className="empty-title">No reviews yet</div><div className="empty-text">This artisan will show real customer reviews after completed jobs.</div></div>}
+                  {reviews.filter((review) => Number(review.artisan_id) === Number(a.id)).length === 0 && <div className="empty-state"><div className="empty-icon"><Icon name={'icon-star'} /></div><div className="empty-title">No reviews yet</div><div className="empty-text">This artisan will show real customer reviews after completed jobs.</div></div>}
                 </div>
               )}
             </div>
@@ -2707,7 +2790,7 @@
                   </div>
                   <div style={{ display: 'flex', gap: 10 }}>
                     <button className="btn btn-outline" onClick={() => setStep(2)}>← Back</button>
-                    <button className="btn btn-copper" style={{ flex: 1 }} onClick={() => onSubmit(data)}><Icon name={'📋'} /> Post Job</button>
+                    <button className="btn btn-copper" style={{ flex: 1 }} onClick={() => onSubmit(data)}><Icon name={'icon-store'} /> Post Job</button>
                   </div>
                 </div>
               )}
@@ -2752,19 +2835,19 @@
                 </div>
                 <div className="payment-form">
                   <div style={{ background: 'var(--green-pale)', border: '1px solid rgba(21,128,61,0.2)', borderRadius: 'var(--r-md)', padding: 12, marginBottom: 16, fontSize: '0.82rem', color: 'var(--green)', lineHeight: 1.6 }}>
-                    <Icon name={'🔒'} /> You will be redirected to KoraPay checkout. No card data is stored in Craft Seal.
+                    <Icon name={'icon-lock'} /> You will be redirected to KoraPay checkout. No card data is stored in Craft Seal.
                   </div>
                   <button className={`btn btn-copper btn-full ${loading ? 'btn-loading' : ''}`} onClick={handlePay}>
-                    {loading ? <Spinner /> : <><Icon name={'🔒'} /> Continue to KoraPay Checkout</>}
+                    {loading ? <Spinner /> : <><Icon name={'icon-lock'} /> Continue to KoraPay Checkout</>}
                   </button>
                   <div className="security-badge">
-                    <span><Icon name={'🔒'} /></span> Tokenized checkout via KoraPay · No raw card storage
+                    <span><Icon name={'icon-lock'} /></span> Tokenized checkout via KoraPay · No raw card storage
                   </div>
                 </div>
               </>
             ) : (
               <div style={{ padding: '40px 24px', textAlign: 'center' }}>
-                <div style={{ fontSize: '4rem', marginBottom: 20 }}><Icon name={'✅'} /></div>
+                <div style={{ fontSize: '4rem', marginBottom: 20 }}><Icon name={'icon-check'} /></div>
                 <div style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '1.3rem', marginBottom: 10 }}>Payment Successful!</div>
                 <div style={{ fontSize: '0.9rem', color: 'var(--slate-mid)', lineHeight: 1.7, marginBottom: 24 }}>
                   {fmt(amount)} is now held securely in escrow. It will be released to the artisan once you confirm the job is complete.
@@ -2792,7 +2875,7 @@
       if (step === 3) {
         return (
           <div className="onboard-screen">
-            <div className="onboard-icon"><Icon name={'👤'} /></div>
+            <div className="onboard-icon"><Icon name={'icon-user'} /></div>
             <div className="onboard-title">I am a...</div>
             <div style={{ width: '100%', maxWidth: 320, display: 'flex', flexDirection: 'column', gap: 14, marginTop: 8 }}>
               {[['client', '🏠', 'Looking for Artisans', 'Find verified craftsmen for any home or business job.'], ['artisan', '🔧', 'I am an Artisan', 'Join the platform to grow my client base and income.']].map(([val, icon, title, desc]) => (
@@ -2814,7 +2897,6 @@
       return (
         <div className="onboard-screen">
           <div style={{ position: 'absolute', top: 20, right: 20, cursor: 'pointer', fontSize: '0.85rem', color: 'var(--slate-light)' }} onClick={() => setStep(3)}>Skip</div>
-          <div className="onboard-icon"><Icon name={s.icon} /></div>
           <div className="onboard-title">{s.title}</div>
           <p className="onboard-text">{s.text}</p>
           <div className="onboard-steps">
@@ -2872,7 +2954,7 @@
         <div className="onboard-screen">
           <div style={{ width: '100%', maxWidth: 420 }}>
             <div style={{ textAlign: 'center', marginBottom: 20 }}>
-              <div style={{ fontSize: '2.4rem' }}><Icon name={'🔒'} /></div>
+              <div style={{ fontSize: '2.4rem' }}><Icon name={'icon-lock'} /></div>
               <div style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '1.4rem', marginTop: 8 }}>Welcome back</div>
               <div style={{ color: 'var(--slate-light)', marginTop: 6 }}>Sign in to continue to Craft Seal</div>
             </div>
@@ -2884,7 +2966,7 @@
               </div>
               <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
                 <button className="btn btn-outline btn-full" onClick={onCreateAccount}>Create account</button>
-                <button className="btn btn-outline btn-full" onClick={handlePasskeyLogin} disabled={!supportsPasskeys()}><Icon name={'🔐'} /> Passkey</button>
+                <button className="btn btn-outline btn-full" onClick={handlePasskeyLogin} disabled={!supportsPasskeys()}><Icon name={'icon-lock'} /> Passkey</button>
               </div>
             </div>
           </div>
@@ -3121,6 +3203,7 @@
       };
       const openJobPost = () => setModal({ type: 'jobPost' });
       const openPayment = (data) => setModal({ type: 'payment', data });
+      const openJobDetail = (job) => setModal({ type: 'job', data: job });
 
       const enablePasskeySetup = async () => {
         try {
@@ -3256,12 +3339,12 @@
       };
 
       const NAV = role === 'artisan'
-        ? [['home', '🏠', 'Dashboard'], ['explore', '🔍', 'Browse'], ['jobs', '📋', 'My Jobs'], ['profile', '👤', 'Profile']]
-        : [['home', '🏠', 'Home'], ['explore', '🔍', 'Explore'], ['jobs', '📋', 'Jobs'], ['notifications', '🔔', 'Alerts'], ['profile', '👤', 'Account']];
+        ? [['home', 'icon-home', 'Dashboard'], ['explore', 'icon-search', 'Browse'], ['jobs', 'icon-store', 'My Jobs'], ['profile', 'icon-user', 'Profile']]
+        : [['home', 'icon-home', 'Home'], ['explore', 'icon-search', 'Explore'], ['jobs', 'icon-store', 'Jobs'], ['notifications', 'icon-bell', 'Alerts'], ['profile', 'icon-user', 'Account']];
 
       const SIDEBAR_ITEMS = [
         { section: 'Main', items: NAV },
-        { section: 'Quick', items: [['jobPost', '📋', 'Post a Job'], ['notifications', '🔔', 'Notifications']] }
+        { section: 'Quick', items: [['jobPost', 'icon-store', 'Post a Job'], ['notifications', 'icon-bell', 'Notifications']] }
       ];
 
       if (!authChecked) return <div className="onboard-screen"><Spinner /></div>;
@@ -3286,7 +3369,7 @@
         switch (page) {
           case 'home': return <HomePage artisans={artisans} onArtisan={openArtisan} onJobPost={openJobPost} setPage={setPage} viewerLocation={getProfileLocation(storedProfile)} />;
           case 'explore': return <ExplorePage artisans={artisans} onArtisan={openArtisan} viewerLocation={getProfileLocation(storedProfile)} />;
-          case 'jobs': return <JobsPage jobs={jobs} profile={storedProfile} role={role} onPayment={(j) => openPayment({ job: j })} onChat={openChatForJob} />;
+          case 'jobs': return <JobsPage jobs={jobs} profile={storedProfile} role={role} onPayment={(j) => openPayment({ job: j })} onChat={openChatForJob} onOpenJob={openJobDetail} />;
           case 'notifications': return <NotificationsPage notifs={notifs} onMarkRead={markNotificationRead} />;
           case 'profile': return <ProfilePage artisans={artisans} reviews={reviews} role={role} profile={storedProfile} settings={settings} onToggleSetting={handleToggleSetting} onLogout={handleLogout} onEditProfile={handleEditProfile} onEnableBiometricLogin={enablePasskeySetup} onSignInWithPasskey={signInWithPasskey} biometricSupported={supportsPasskeys()} />;
           case 'artisan': return <ArtisanProfilePage artisan={currentArtisan} reviews={reviews} onHire={handleHire} onBack={() => setPage('explore')} />;
@@ -3296,7 +3379,7 @@
 
       return (
         <div className="app-shell">
-          
+
           <nav className="top-nav">
             <div className="nav-logo-app">
               <div className="logo-circle">CS</div>
@@ -3305,17 +3388,17 @@
             <div className="nav-spacer" />
             <div style={{ marginRight: 4 }}>
               <span className={`chip ${role === 'artisan' ? 'chip-copper' : 'chip-green'}`} style={{ fontSize: '0.72rem', padding: '4px 10px' }}>
-                {role === 'artisan' ? <><Icon name={'🔧'} /> Artisan</> : <><Icon name={'👤'} /> Client</>}
+                {role === 'artisan' ? <><Icon name={'icon-shield'} /> Artisan</> : <><Icon name={'icon-user'} /> Client</>}
               </span>
             </div>
             <button className="nav-icon-btn notification-dot" onClick={() => setPage('notifications')}>
-              <Icon name={'🔔'} />
+              <Icon name={'icon-bell'} />
               {notifs && notifs.filter(n => n.unread).length > 0 && <span className="notif-count">{notifs.filter(n => n.unread).length}</span>}
             </button>
-            <button className="nav-icon-btn" onClick={() => setPage('profile')}><Icon name={'👤'} /></button>
+            <button className="nav-icon-btn" onClick={() => setPage('profile')}><Icon name={'icon-user'} /></button>
           </nav>
 
-          
+
           <aside className="sidebar">
             {NAV.map(([id, icon, label]) => (
               <div key={id} className={`sidebar-item ${page === id ? 'active' : ''}`} onClick={() => setPage(id)}>
@@ -3324,7 +3407,7 @@
             ))}
             <div className="sidebar-section-label">Actions</div>
             <div className="sidebar-item" onClick={openJobPost}>
-              <span className="sidebar-icon"><Icon name={'📋'} /></span> Post a Job
+              <span className="sidebar-icon"><Icon name={'icon-store'} /></span> Post a Job
             </div>
             <div style={{ flex: 1 }} />
             <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border)', fontSize: '0.75rem', color: 'var(--slate-light)', lineHeight: 1.7 }}>
@@ -3333,10 +3416,10 @@
             </div>
           </aside>
 
-          
+
           <main className="main-content">{renderPage()}</main>
 
-          
+
           <nav className="bottom-nav">
             {NAV.map(([id, icon, label]) => (
               <div key={id} className={`bottom-nav-item ${page === id ? 'active' : ''}`} onClick={() => setPage(id)}>
@@ -3346,9 +3429,10 @@
             ))}
           </nav>
 
-          
+
           {modal?.type === 'artisan' && <ArtisanDetailModal artisan={modal.data} reviews={reviews} onClose={() => setModal(null)} onHire={handleHire} />}
           {modal?.type === 'jobPost' && <PostJobModal onClose={() => setModal(null)} onSubmit={handleJobPost} />}
+          {modal?.type === 'job' && <JobDetailModal job={modal.data} artisans={artisans} onClose={() => setModal(null)} onViewArtisan={(a) => { setModal(null); setCurrentArtisan(a); setPage('artisan'); }} onViewProfile={() => { setModal(null); setPage('profile'); }} profile={storedProfile} />}
           {modal?.type === 'payment' && <PaymentModal {...modal.data} onClose={() => setModal(null)} showToast={showToast} onPaid={async (n) => {
             try {
               const response = await apiJson('/api/notifications', {
@@ -3364,7 +3448,7 @@
           }} />}
           {modal?.type === 'chat' && <ChatModal chat={modal.data} profile={storedProfile} onClose={() => setModal(null)} />}
 
-          
+
           {toast && <Toast message={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
         </div>
       );

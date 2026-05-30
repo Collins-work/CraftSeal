@@ -5,25 +5,12 @@ const crypto = require('crypto');
 const { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } = require('@simplewebauthn/server');
 const { isoBase64URL } = require('@simplewebauthn/server/helpers');
 
-// Load environment variables from .env when present (optional)
 try {
     require('dotenv').config();
 } catch (e) {
-    // dotenv not installed; continue using process.env
 }
 
-const DATABASE_URL = process.env.DATABASE_URL || null;
-let pgClient = null;
-if (DATABASE_URL) {
-    try {
-        const { Client } = require('pg');
-        pgClient = new Client({ connectionString: DATABASE_URL });
-        pgClient.connect().then(() => console.log('Postgres client connected')).catch((e) => { console.warn('Postgres connect failed', e.message); pgClient = null; });
-    } catch (e) {
-        console.warn('pg client not available or failed to initialize:', e.message);
-        pgClient = null;
-    }
-}
+
 
 const ROOT = __dirname;
 const DATA_FILE = path.join(ROOT, 'craftseal-data.json');
@@ -64,37 +51,11 @@ function readData() {
 
 function writeData(data) {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-    if (pgClient) {
-        (async () => {
-            try {
-                await pgClient.query(`CREATE TABLE IF NOT EXISTS states (id integer PRIMARY KEY, data jsonb)`);
-                await pgClient.query(`INSERT INTO states (id, data) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data`, [1, data]);
-            } catch (e) {
-                console.warn('Postgres upsert error', e && e.message);
-            }
-        })();
-    }
 }
 
-    
+
 async function initializePersistence() {
-    if (!pgClient) return;
-    try {
-        await pgClient.query(`CREATE TABLE IF NOT EXISTS states (id integer PRIMARY KEY, data jsonb)`);
-        const res = await pgClient.query('SELECT data FROM states WHERE id = $1', [1]);
-        if (res && res.rows && res.rows.length > 0 && res.rows[0].data) {
-            fs.writeFileSync(DATA_FILE, JSON.stringify(res.rows[0].data, null, 2));
-            console.log('Loaded state from Postgres into local persistence');
-        } else {
-            if (fs.existsSync(DATA_FILE)) {
-                const local = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-                await pgClient.query('INSERT INTO states (id, data) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data', [1, local]);
-                console.log('Pushed local state to Postgres');
-            }
-        }
-    } catch (e) {
-        console.warn('initializePersistence error', e && e.message);
-    }
+    return;
 }
 
 function nowLabel() { return 'Just now'; }
@@ -219,7 +180,7 @@ const server = http.createServer(async (req, res) => {
     const state = readData();
     const currentUser = getUserFromRequest(state, req);
 
-    
+
     if (url.pathname === '/api/state' && req.method === 'GET') {
         sendJson(res, 200, {
             ...state,
@@ -396,13 +357,13 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    
+
     if (url.pathname === '/api/events' && req.method === 'GET') {
         res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-cache, no-transform', Connection: 'keep-alive', 'Access-Control-Allow-Origin': '*' });
         res.write('\n'); clients.push(res); req.on('close', () => { clients = clients.filter(c => c !== res); }); return;
     }
 
-    
+
     if (url.pathname === '/api/users' && req.method === 'POST') {
         const body = await parseBody(req);
         if (!body || !body.email || !body.role) return sendJson(res, 400, { error: 'Missing user email or role' });
@@ -416,13 +377,13 @@ const server = http.createServer(async (req, res) => {
         sendJson(res, 201, { user, state }); return;
     }
 
-    
+
     if (url.pathname === '/api/reviews' && req.method === 'POST') {
         const body = await parseBody(req);
         if (!body || !body.artisan_id || !body.user_id || !body.rating) return sendJson(res, 400, { error: 'Missing review fields' });
         const review = { id: nextId(state.reviews), artisan_id: Number(body.artisan_id), user_id: Number(body.user_id), rating: Number(body.rating), text: body.text || '', created_at: new Date().toISOString() };
         state.reviews.unshift(review);
-        
+
         const artisanReviews = state.reviews.filter(r => Number(r.artisan_id) === Number(body.artisan_id));
         const art = state.artisans.find(a => Number(a.id) === Number(body.artisan_id));
         if (art) { art.rating = computeRating(artisanReviews); art.reviewCount = artisanReviews.length; }
@@ -430,7 +391,7 @@ const server = http.createServer(async (req, res) => {
         writeData(state); broadcast(state); sendJson(res, 201, { review, state }); return;
     }
 
-    
+
     if (url.pathname === '/api/bids' && req.method === 'POST') {
         const body = await parseBody(req);
         if (!body || !body.job_id || !body.artisan_id || !body.amount) return sendJson(res, 400, { error: 'Missing bid fields' });
@@ -440,7 +401,7 @@ const server = http.createServer(async (req, res) => {
         writeData(state); broadcast(state); sendJson(res, 201, { bid, state }); return;
     }
 
-    
+
     if (url.pathname === '/api/jobs' && req.method === 'POST') {
         const body = await parseBody(req);
         if (!body || !body.title || !body.user_id) return sendJson(res, 400, { error: 'Missing job fields' });
@@ -450,7 +411,7 @@ const server = http.createServer(async (req, res) => {
         writeData(state); broadcast(state); sendJson(res, 201, { job, state }); return;
     }
 
-    
+
     if (url.pathname.startsWith('/api/jobs/') && req.method === 'PATCH') {
         const id = Number(url.pathname.split('/')[3]);
         const body = await parseBody(req);
@@ -460,7 +421,7 @@ const server = http.createServer(async (req, res) => {
         writeData(state); broadcast(state); sendJson(res, 200, { job, state }); return;
     }
 
-    
+
     if (url.pathname === '/api/notifications' && req.method === 'POST') {
         const body = await parseBody(req);
         const note = createNotification(state, body.text || 'Notification', body.icon || '💬');
@@ -474,7 +435,7 @@ const server = http.createServer(async (req, res) => {
         note.unread = false; writeData(state); broadcast(state); sendJson(res, 200, { notification: note, state }); return;
     }
 
-    
+
     if (url.pathname === '/api/payments/init' && req.method === 'POST') {
         const body = await parseBody(req);
         const reference = `CS-${Date.now()}`;
@@ -512,9 +473,9 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    
+
     if (url.pathname === '/api/chats' && req.method === 'GET') {
-        
+
         const q = Object.fromEntries(url.searchParams.entries());
         let chats = Array.isArray(state.chats) ? state.chats : [];
         if (q.job_id) chats = chats.filter(c => Number(c.job_id) === Number(q.job_id));
@@ -529,7 +490,7 @@ const server = http.createServer(async (req, res) => {
         let chat = null;
         if (body.chatId) chat = state.chats.find(c => Number(c.id) === Number(body.chatId));
         if (!chat) {
-            
+
             chat = { id: nextId(state.chats || []), job_id: Number(body.job_id), user_id: Number(body.user_id || 0), artisan_id: Number(body.artisan_id || 0), messages: [] };
             state.chats = state.chats || [];
             state.chats.unshift(chat);
@@ -541,7 +502,7 @@ const server = http.createServer(async (req, res) => {
         writeData(state); broadcast(state); sendJson(res, 201, { chat, msg, state }); return;
     }
 
-    
+
     if (url.pathname === '/' || url.pathname === '/landing' || url.pathname === '/craftseal-landing.html') {
         serveFile(res, path.join(ROOT, 'craftseal-landing.html'));
         return;
@@ -568,7 +529,6 @@ function probeExistingServer(port) {
     });
 }
 
-// initialize persistence sync with Supabase (if configured), then start server
 initializePersistence().catch((e) => console.warn('initializePersistence failed', e && e.message));
 server.on('error', async (err) => {
     if (err && err.code === 'EADDRINUSE') {
